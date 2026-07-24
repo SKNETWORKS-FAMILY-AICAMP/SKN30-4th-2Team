@@ -76,6 +76,8 @@ async def test_lifespan_exposes_and_cleans_mcp_runtime(
     settings = SimpleNamespace(
         database_url=f"sqlite+pysqlite:///{database_path}",
         database_echo=False,
+        temp_upload_dir=tmp_path / "uploads",
+        storage_cleanup_interval_seconds=60,
     )
     monkeypatch.setattr(lifespan_module, "get_settings", lambda: settings)
     monkeypatch.setattr(lifespan_module, "open_workshield_mcp", fake_open)
@@ -83,6 +85,7 @@ async def test_lifespan_exposes_and_cleans_mcp_runtime(
     async with lifespan(app):
         assert app.state.workshield_mcp is runtime
         assert isinstance(app.state.database, Database)
+        assert isinstance(app.state.file_storage, object)
         assert database_path.is_file()
         assert closed is False
 
@@ -90,4 +93,6 @@ async def test_lifespan_exposes_and_cleans_mcp_runtime(
         _ = app.state.workshield_mcp
     with pytest.raises(AttributeError):
         _ = app.state.database
+    with pytest.raises(AttributeError):
+        _ = app.state.file_storage
     assert closed is True

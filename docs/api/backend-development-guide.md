@@ -10,6 +10,7 @@
 
 - [API 초안](./api-draft.md)
 - [SQLite 영속성 결정 기록](../adr/0724-sqlite-persistence.md)
+- [익명 세션 접근 제어와 임시 파일 저장소](../adr/0724-anonymous-session-file-storage.md)
 - [API 실행 안내](../../api/README.md)
 
 ## 1. 먼저 기억할 원칙
@@ -292,6 +293,16 @@ async def get_review_session(
 
 라우터에서 `select()`, `session.get()`, `session.commit()`을 직접 호출하지
 않는다.
+
+세션 또는 검토 하위 리소스 Router는 ID만으로 Repository를 조회하지
+않는다. `app/access_control/dependencies.py`의 `OwnedReviewSessionDep` 또는
+`OwnedReviewDep`를 주입받아 HttpOnly Cookie의 익명 세션 소유권을 먼저
+검증한다. 존재하지 않는 리소스와 다른 세션의 리소스는 모두 동일한 404로
+처리하며, 소유권이 확인된 만료 세션만 410으로 처리한다.
+
+사용자 파일은 `app/storage/protocol.py`의 `FileStorage`를 통해서만
+저장·열기·삭제한다. Application Service와 MCP 연동 코드는 저장 루트를
+조합하거나 `Path.unlink()`를 직접 호출하지 않는다.
 
 ## 6. 파일형 SQLite 사용법
 

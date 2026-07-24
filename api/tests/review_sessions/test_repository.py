@@ -24,7 +24,7 @@ def review_session_entity(
         state=ReviewSessionState.TYPE_SELECTION_REQUIRED,
         original_file_name="계약서.pdf",
         file_size_bytes=421_398,
-        storage_path=f"/tmp/{session_id}.pdf",
+        storage_key=f"{'a' * 43}.pdf",
         created_at=now,
         updated_at=now,
         expires_at=now + timedelta(hours=1),
@@ -51,6 +51,11 @@ def test_review_session_repository_add_get_and_save(database: Database) -> None:
 
         restored = repository.get(entity.id)
         assert restored == entity
+        assert (
+            repository.get_owned(entity.id, entity.access_token_hash)
+            == entity
+        )
+        assert repository.get_owned(entity.id, "wrong-hash") is None
 
         entity.selected_contract_type = "SW_FREELANCE"
         entity.selection_source = SelectionSource.SUGGESTED

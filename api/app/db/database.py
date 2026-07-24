@@ -3,7 +3,7 @@
 import sqlite3
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event, text
+from sqlalchemy import Engine, create_engine, event, inspect, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
@@ -60,6 +60,26 @@ class Database:
         from app.db import models  # noqa: F401
 
         Base.metadata.create_all(self.engine)
+        self._add_storage_key_to_legacy_schema()
+
+    def _add_storage_key_to_legacy_schema(self) -> None:
+        """초기 개발 DB의 storage_path를 건드리지 않고 새 컬럼을 추가한다."""
+        inspector = inspect(self.engine)
+        if "review_sessions" not in inspector.get_table_names():
+            return
+        column_names = {
+            column["name"]
+            for column in inspector.get_columns("review_sessions")
+        }
+        if "storage_key" in column_names:
+            return
+        with self.engine.begin() as connection:
+            connection.execute(
+                text(
+                    "ALTER TABLE review_sessions "
+                    "ADD COLUMN storage_key TEXT NULL"
+                )
+            )
 
     def session(self) -> Session:
         """명시적으로 닫아야 하는 새 SQLAlchemy Session을 반환한다."""

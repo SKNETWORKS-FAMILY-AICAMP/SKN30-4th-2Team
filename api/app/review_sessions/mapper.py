@@ -39,7 +39,7 @@ def review_session_to_row(entity: ReviewSession) -> ReviewSessionRow:
         out_of_scope_confirmed_at=entity.out_of_scope_confirmed_at,
         original_file_name=entity.original_file_name,
         file_size_bytes=entity.file_size_bytes,
-        storage_path=entity.storage_path,
+        storage_key=entity.storage_key,
         created_at=entity.created_at,
         updated_at=entity.updated_at,
         expires_at=entity.expires_at,
@@ -63,7 +63,7 @@ def update_review_session_row(
     row.out_of_scope_confirmed_at = entity.out_of_scope_confirmed_at
     row.original_file_name = entity.original_file_name
     row.file_size_bytes = entity.file_size_bytes
-    row.storage_path = entity.storage_path
+    row.storage_key = entity.storage_key
     row.created_at = entity.created_at
     row.updated_at = entity.updated_at
     row.expires_at = entity.expires_at
@@ -85,7 +85,7 @@ def review_session_from_row(row: ReviewSessionRow) -> ReviewSession:
         out_of_scope_confirmed_at=_optional_utc(row.out_of_scope_confirmed_at),
         original_file_name=row.original_file_name,
         file_size_bytes=row.file_size_bytes,
-        storage_path=row.storage_path,
+        storage_key=row.storage_key,
         created_at=_as_utc(row.created_at),
         updated_at=_as_utc(row.updated_at),
         expires_at=_as_utc(row.expires_at),
