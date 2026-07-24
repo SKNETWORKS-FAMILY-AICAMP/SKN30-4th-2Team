@@ -7,7 +7,9 @@ from fastapi import Depends, Security
 from fastapi.security import APIKeyCookie
 
 from app.common.errors import ExpiredError, NotFoundError
+from app.config import SettingsDep
 from app.db.dependencies import DbSessionDep
+from app.review_sessions.activity import touch_review, touch_session
 from app.review_sessions.domain import ReviewSession
 from app.review_sessions.repository import SqlAlchemyReviewSessionRepository
 from app.reviews.domain import Review
@@ -49,7 +51,10 @@ def resolve_owned_session(
     )
     if entity is None:
         raise _resource_not_found()
-    if entity.is_expired(datetime.now(UTC)):
+    if (
+        entity.is_expired(datetime.now(UTC))
+        and not SqlAlchemyReviewRepository(db_session).has_active_for_session(entity.id)
+    ):
         raise ExpiredError(
             code="SESSION_EXPIRED",
             message="검토 세션이 만료되었습니다.",
@@ -73,7 +78,10 @@ def resolve_owned_review(
     )
     if entity is None:
         raise _resource_not_found()
-    if entity.is_expired(datetime.now(UTC)):
+    if (
+        entity.state.value not in {"QUEUED", "REVIEWING"}
+        and entity.is_expired(datetime.now(UTC))
+    ):
         raise ExpiredError(
             code="SESSION_EXPIRED",
             message="검토 세션이 만료되었습니다.",
@@ -85,10 +93,18 @@ def resolve_owned_review(
 def require_owned_review_session(
     session_id: str,
     db_session: DbSessionDep,
+    settings: SettingsDep,
     access_token: SessionCookie = None,
 ) -> ReviewSession:
     """Cookie 토큰이 소유한 미만료 검토 세션만 반환한다."""
-    return resolve_owned_session(session_id, access_token, db_session)
+    entity = resolve_owned_session(session_id, access_token, db_session)
+    touch_session(
+        db_session,
+        entity,
+        ttl_seconds=settings.session_ttl_seconds,
+    )
+    db_session.commit()
+    return entity
 
 
 OwnedReviewSessionDep = Annotated[
@@ -100,10 +116,18 @@ OwnedReviewSessionDep = Annotated[
 def require_owned_review(
     review_id: str,
     db_session: DbSessionDep,
+    settings: SettingsDep,
     access_token: SessionCookie = None,
 ) -> Review:
     """Cookie 토큰이 소유한 미만료 검토만 반환한다."""
-    return resolve_owned_review(review_id, access_token, db_session)
+    entity = resolve_owned_review(review_id, access_token, db_session)
+    touch_review(
+        db_session,
+        entity,
+        ttl_seconds=settings.session_ttl_seconds,
+    )
+    db_session.commit()
+    return entity
 
 
 OwnedReviewDep = Annotated[Review, Depends(require_owned_review)]

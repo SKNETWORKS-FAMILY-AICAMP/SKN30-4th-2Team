@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.common.errors import ConflictError, ExpiredError
 from app.config import Settings
+from app.review_sessions.activity import touch_session
 from app.review_sessions.domain import ReviewSession, ReviewSessionState
 from app.reviews.domain import Review, ReviewState
 from app.reviews.repository import SqlAlchemyReviewRepository
@@ -63,6 +64,13 @@ def create_review(
             message="이미 실행 중인 검토가 있습니다.",
         )
     now = datetime.now(UTC)
+    for previous in repository.list_by_session(session.id):
+        previous.state = ReviewState.EXPIRED
+        previous.progress = None
+        previous.result = None
+        previous.error = None
+        previous.expires_at = now
+        repository.save(previous)
     entity = Review(
         id=f"rev_{uuid.uuid4().hex}",
         session_id=session.id,
@@ -81,7 +89,13 @@ def create_review(
         },
     )
     repository.add(entity)
-    db_session.commit()
+    touch_session(
+        db_session,
+        session,
+        ttl_seconds=settings.session_ttl_seconds,
+        now=now,
+    )
+    db_session.flush()
     return entity
 
 
@@ -120,5 +134,5 @@ def retry_review(
         progress={"sequence": 0, "stage": "PREPARE", "percent": 0},
     )
     repository.add(retried)
-    db_session.commit()
+    db_session.flush()
     return retried

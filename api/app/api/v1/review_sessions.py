@@ -3,7 +3,7 @@
 from fastapi import APIRouter, File, Request, Response, UploadFile
 
 from app.access_control.dependencies import OwnedReviewSessionDep
-from app.common.responses import success_response
+from app.common.responses import ApiResponse, COMMON_ERROR_RESPONSES, success_response
 from app.config import SettingsDep
 from app.db.dependencies import DbSessionDep
 from app.llm.mcp.dependencies import WorkShieldMCPRuntimeDep
@@ -22,7 +22,11 @@ from app.security.cookies import set_session_access_cookie
 from app.storage.dependencies import FileStorageDep
 
 
-router = APIRouter(prefix="/review-sessions", tags=["review-sessions"])
+router = APIRouter(
+    prefix="/review-sessions",
+    tags=["review-sessions"],
+    responses=COMMON_ERROR_RESPONSES,
+)
 
 
 def _response(entity) -> ReviewSessionResponse:
@@ -51,7 +55,11 @@ def _response(entity) -> ReviewSessionResponse:
     )
 
 
-@router.post("", status_code=201)
+@router.post(
+    "",
+    status_code=201,
+    response_model=ApiResponse[ReviewSessionResponse],
+)
 async def create_session(
     request: Request,
     response: Response,
@@ -75,13 +83,19 @@ async def create_session(
     return success_response(request, _response(entity))
 
 
-@router.get("/{session_id}")
+@router.get(
+    "/{session_id}",
+    response_model=ApiResponse[ReviewSessionResponse],
+)
 def get_session(request: Request, owned: OwnedReviewSessionDep):
     """Cookie 소유자에게만 세션 상태를 반환한다."""
     return success_response(request, _response(owned))
 
 
-@router.patch("/{session_id}/contract-type")
+@router.patch(
+    "/{session_id}/contract-type",
+    response_model=ApiResponse[ReviewSessionResponse],
+)
 def choose_contract_type(
     request: Request,
     owned: OwnedReviewSessionDep,
@@ -98,7 +112,10 @@ def choose_contract_type(
     return success_response(request, _response(entity))
 
 
-@router.post("/{session_id}/out-of-scope-confirmation")
+@router.post(
+    "/{session_id}/out-of-scope-confirmation",
+    response_model=ApiResponse[ReviewSessionResponse],
+)
 def confirm_scope(
     request: Request,
     owned: OwnedReviewSessionDep,

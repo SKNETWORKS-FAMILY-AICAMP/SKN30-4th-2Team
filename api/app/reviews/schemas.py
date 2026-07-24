@@ -33,3 +33,12 @@ class ReviewCreateResponse(BaseModel):
     review_id: str
     review_state: str
     session_id: str
+    retry_of: str | None = None
+
+
+class ReviewCancelResponse(BaseModel):
+    """검토 결과 폐기와 파일 정리 응답."""
+
+    review_id: str
+    review_state: str
+    deleted: bool
