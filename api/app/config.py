@@ -56,6 +56,13 @@ class Settings(BaseSettings):
     app_env: Environment = _selected_environment()
     llm_provider: LLMProvider
     llm_model: str | None = None
+    database_url: str = (
+        f"sqlite+pysqlite:///{API_ROOT / 'data' / 'workshield.db'}"
+    )
+    database_echo: bool = False
+    app_debug: bool = False
+    api_docs_enabled: bool = True
+    cors_origins: list[str] = ["http://localhost:5173"]
 
     openai_api_key: SecretStr | None = None
     gemini_api_key: SecretStr | None = None
@@ -68,11 +75,15 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_production_provider(self) -> "Settings":
-        """운영 환경에서 계약서가 외부 LLM으로 전송되는 구성을 막는다."""
+        """운영 환경의 외부 전송과 민감한 디버그 출력을 막는다."""
         if self.app_env == "prod" and self.llm_provider is not LLMProvider.OLLAMA:
             raise ValueError(
                 "운영 환경에서는 LLM_PROVIDER=ollama만 사용할 수 있습니다."
             )
+        if self.app_env == "prod" and self.app_debug:
+            raise ValueError("운영 환경에서는 APP_DEBUG=false여야 합니다.")
+        if self.app_env == "prod" and self.database_echo:
+            raise ValueError("운영 환경에서는 DATABASE_ECHO=false여야 합니다.")
         return self
 
     def selected_provider_key(self) -> SecretStr | None:
