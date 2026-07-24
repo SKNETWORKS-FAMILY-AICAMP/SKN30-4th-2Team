@@ -11,3 +11,4 @@ api/**/*.py[cod]
 # API 로컬 SQLite 데이터
 api/data/*.db
 api/data/*.db-*
+.test-tmp/

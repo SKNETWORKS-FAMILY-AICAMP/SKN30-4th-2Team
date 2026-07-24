@@ -7,12 +7,21 @@ from pathlib import Path
 from typing import Annotated, Literal, cast
 
 from fastapi import Depends
-from pydantic import AnyHttpUrl, Field, SecretStr, model_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import AnyHttpUrl, Field, SecretStr, field_validator, model_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 API_ROOT = Path(__file__).resolve().parent.parent
 Environment = Literal["local", "prod"]
+DEFAULT_SUPPORTED_FILE_EXTENSIONS = (
+    "hwp",
+    "hwpx",
+    "hwpml",
+    "pdf",
+    "xls",
+    "xlsx",
+    "docx",
+)
 
 
 class LLMProvider(StrEnum):
@@ -72,6 +81,28 @@ class Settings(BaseSettings):
     workshield_mcp_project_dir: Path = API_ROOT.parent / "mcp"
     workshield_mcp_timeout: float = Field(default=30.0, gt=0)
     workshield_mcp_read_timeout: float = Field(default=300.0, gt=0)
+    max_upload_size_bytes: int = Field(default=10 * 1024 * 1024, gt=0)
+    supported_file_extensions: Annotated[tuple[str, ...], NoDecode] = (
+        DEFAULT_SUPPORTED_FILE_EXTENSIONS
+    )
+    temp_upload_dir: Path = Path("data/99_uploads")
+    session_ttl_seconds: int = Field(default=60 * 60, gt=0)
+
+    @field_validator("supported_file_extensions", mode="before")
+    @classmethod
+    def parse_supported_file_extensions(
+        cls, value: str | tuple[str, ...]
+    ) -> tuple[str, ...]:
+        """쉼표 구분 확장자 설정을 점 없는 소문자 튜플로 정규화한다."""
+        raw_extensions = value.split(",") if isinstance(value, str) else value
+        extensions = tuple(
+            extension.strip().lower().removeprefix(".")
+            for extension in raw_extensions
+            if extension.strip().removeprefix(".")
+        )
+        if not extensions:
+            raise ValueError("SUPPORTED_FILE_EXTENSIONS는 비어 있을 수 없습니다.")
+        return extensions
 
     @model_validator(mode="after")
     def validate_production_provider(self) -> "Settings":
