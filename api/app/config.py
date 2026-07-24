@@ -81,7 +81,11 @@ class Settings(BaseSettings):
     workshield_mcp_project_dir: Path = API_ROOT.parent / "mcp"
     workshield_mcp_timeout: float = Field(default=30.0, gt=0)
     workshield_mcp_read_timeout: float = Field(default=300.0, gt=0)
-    max_upload_size_bytes: int = Field(default=10 * 1024 * 1024, gt=0)
+    max_upload_size_bytes: int = Field(
+        default=10_000_000,
+        gt=0,
+        description="업로드 파일의 최대 크기(byte). 기본값은 10 MB이다.",
+    )
     supported_file_extensions: Annotated[tuple[str, ...], NoDecode] = (
         DEFAULT_SUPPORTED_FILE_EXTENSIONS
     )

@@ -62,7 +62,7 @@ def test_upload_and_session_settings_have_expected_defaults() -> None:
         llm_model="configured-model",
     )
 
-    assert settings.max_upload_size_bytes == 10 * 1024 * 1024
+    assert settings.max_upload_size_bytes == 10_000_000
     assert settings.supported_file_extensions == DEFAULT_SUPPORTED_FILE_EXTENSIONS
     assert settings.temp_upload_dir.as_posix() == "data/99_uploads"
     assert settings.session_ttl_seconds == 30 * 60
