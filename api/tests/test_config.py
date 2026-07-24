@@ -3,7 +3,12 @@
 import pytest
 from pydantic import ValidationError
 
-from app.config import MCPTransport, Settings, get_settings
+from app.config import (
+    DEFAULT_SUPPORTED_FILE_EXTENSIONS,
+    MCPTransport,
+    Settings,
+    get_settings,
+)
 
 
 def test_get_settings_is_cached() -> None:
@@ -46,8 +51,50 @@ def test_database_defaults_to_file_sqlite() -> None:
     )
 
     assert settings.database_url.startswith("sqlite+pysqlite:///")
-    assert settings.database_url.endswith("/data/workshield.db")
+    assert settings.database_url.replace("\\", "/").endswith("/data/workshield.db")
     assert settings.database_echo is False
+
+
+def test_upload_and_session_settings_have_expected_defaults() -> None:
+    settings = Settings(
+        app_env="local",
+        llm_provider="ollama",
+        llm_model="configured-model",
+    )
+
+    assert settings.max_upload_size_bytes == 10 * 1024 * 1024
+    assert settings.supported_file_extensions == DEFAULT_SUPPORTED_FILE_EXTENSIONS
+    assert settings.temp_upload_dir.as_posix() == "data/99_uploads"
+    assert settings.session_ttl_seconds == 60 * 60
+
+
+def test_supported_file_extensions_accepts_comma_separated_value() -> None:
+    settings = Settings(
+        app_env="local",
+        llm_provider="ollama",
+        supported_file_extensions="pdf, DOCX, .hwp",
+    )
+
+    assert settings.supported_file_extensions == ("pdf", "docx", "hwp")
+
+
+@pytest.mark.parametrize(
+    ("field_name", "invalid_value"),
+    [
+        ("max_upload_size_bytes", 0),
+        ("session_ttl_seconds", 0),
+        ("supported_file_extensions", ""),
+    ],
+)
+def test_upload_and_session_settings_reject_invalid_values(
+    field_name: str, invalid_value: int | str
+) -> None:
+    with pytest.raises(ValidationError):
+        Settings(
+            app_env="local",
+            llm_provider="ollama",
+            **{field_name: invalid_value},
+        )
 
 
 def test_production_rejects_debug_mode() -> None:
