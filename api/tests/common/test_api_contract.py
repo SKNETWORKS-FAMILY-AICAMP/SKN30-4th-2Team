@@ -1,5 +1,6 @@
-"""공통 API 성공·오류 응답과 요청 ID 계약을 검증한다."""
+"""공통 API 성공·오류 응답과 안전한 요청 로그 계약을 검증한다."""
 
+import logging
 from typing import Annotated
 
 import httpx
@@ -69,6 +70,31 @@ async def test_success_response_contains_request_metadata() -> None:
     assert response.headers["X-Request-ID"] == body["meta"]["request_id"]
 
 
+async def test_request_log_contains_only_safe_metadata(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.INFO, logger="uvicorn.error")
+    transport = httpx.ASGITransport(app=create_contract_test_app())
+
+    async with httpx.AsyncClient(
+        transport=transport,
+        base_url="http://test",
+    ) as client:
+        response = await client.get("/success?contract=sensitive-body")
+
+    request_id = response.headers["X-Request-ID"]
+    message = next(
+        record.getMessage()
+        for record in caplog.records
+        if "event=http.request.completed" in record.getMessage()
+    )
+    assert f"request_id={request_id}" in message
+    assert "state=200" in message
+    assert "duration_ms=" in message
+    assert "sensitive-body" not in message
+    assert "/success" not in message
+
+
 async def test_domain_error_uses_common_error_response() -> None:
     transport = httpx.ASGITransport(app=create_contract_test_app())
     async with httpx.AsyncClient(
@@ -121,11 +147,11 @@ async def test_unknown_route_uses_common_error_response() -> None:
     assert response.json()["error"]["code"] == "RESOURCE_NOT_FOUND"
 
 
-async def test_unexpected_error_hides_internal_message() -> None:
-    transport = httpx.ASGITransport(
-        app=create_contract_test_app(),
-        raise_app_exceptions=False,
-    )
+async def test_unexpected_error_hides_internal_message(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    caplog.set_level(logging.ERROR, logger="uvicorn.error")
+    transport = httpx.ASGITransport(app=create_contract_test_app())
     async with httpx.AsyncClient(
         transport=transport,
         base_url="http://test",
@@ -135,3 +161,5 @@ async def test_unexpected_error_hides_internal_message() -> None:
     assert response.status_code == 500
     assert response.json()["error"]["code"] == "INTERNAL_SERVER_ERROR"
     assert "외부에 노출되면 안 되는 내부 오류" not in response.text
+    assert "외부에 노출되면 안 되는 내부 오류" not in caplog.text
+    assert "event=api.unexpected_error" in caplog.text

@@ -17,11 +17,10 @@ from app.common.errors import (
     ExternalServiceTimeoutError,
     NotFoundError,
 )
+from app.common.logging import log_event
 from app.common.request_id import REQUEST_ID_HEADER, get_request_id
 from app.common.responses import ApiError, ApiErrorResponse, api_meta
 
-
-logger = logging.getLogger(__name__)
 
 APP_ERROR_STATUS: tuple[tuple[type[AppError], int], ...] = (
     (AppValidationError, status.HTTP_422_UNPROCESSABLE_CONTENT),
@@ -137,13 +136,14 @@ async def http_error_handler(
 
 async def unexpected_error_handler(
     request: Request,
-    error: Exception,
+    _error: Exception,
 ) -> JSONResponse:
-    """예상하지 못한 오류를 기록하되 내부 정보는 응답에서 숨긴다."""
-    logger.error(
-        "처리되지 않은 API 오류가 발생했습니다.",
-        exc_info=error,
-        extra={"request_id": get_request_id(request)},
+    """예상하지 못한 오류의 본문·메시지·스택 트레이스를 기록하지 않는다."""
+    log_event(
+        event="api.unexpected_error",
+        request_id=get_request_id(request),
+        state="failed",
+        level=logging.ERROR,
     )
     return _error_response(
         request,

@@ -39,6 +39,8 @@ cp .env.example .env
 - 운영 배포 환경에서는 프로세스 환경 변수로 `APP_ENV=prod`를 반드시 지정해야 합니다.
 - DB는 기본적으로 `api/data/workshield.db` 파일형 SQLite를 사용합니다.
   서버 시작 시 필요한 테이블을 자동 생성하며 DB 파일은 Git으로 추적하지 않습니다.
+- 운영 기본 설정은 `APP_DEBUG=false`, `API_DOCS_ENABLED=false`,
+  `DATABASE_ECHO=false`이며 debug와 DB 쿼리 로그는 운영에서 활성화할 수 없습니다.
 
 ### 서버 실행
 
@@ -59,7 +61,7 @@ api/
 │   ├── lifespan.py       # MCP 등 외부 자원의 수명주기
 │   ├── config.py         # 애플리케이션 전체 공통 Settings 및 SettingsDep (DI)
 │   ├── api/              # 시스템 API와 /api/v1 라우터
-│   ├── common/           # 공통 응답, 오류, 예외 처리, 요청 ID
+│   ├── common/           # 공통 응답, 오류, 요청 ID, 비식별 이벤트 로그
 │   ├── db/               # SQLite Engine, Session 의존성, ORM Row
 │   ├── review_sessions/  # 검토 세션 도메인, Mapper, Repository
 │   ├── reviews/          # 검토 도메인, Mapper, Repository
@@ -159,7 +161,12 @@ uv run ruff check app main.py tests
 | Method | Path | 용도 |
 | --- | --- | --- |
 | `GET` | `/health/live` | API 프로세스의 HTTP 응답 가능 여부 |
-| `GET` | `/health/ready` | 애플리케이션 설정 준비 상태 |
+| `GET` | `/health/ready` | SQLite 연결 및 MCP 런타임 준비 상태 |
+
+Uvicorn의 기본 access/error 로그를 사용하며 추가 패키지는 도입하지 않습니다.
+애플리케이션 이벤트는 `request_id`, 세션 ID 해시, `review_id`, 상태, 처리
+시간만 기록합니다. 계약서·조항·프롬프트·결과·대화 본문과 예외 메시지·스택
+트레이스는 애플리케이션 로그에 기록하지 않습니다.
 
 ## SQLite 영속성
 

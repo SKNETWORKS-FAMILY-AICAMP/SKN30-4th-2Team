@@ -22,6 +22,8 @@ def create_app(lifespan_handler: LifespanHandler = lifespan) -> FastAPI:
     app = FastAPI(
         title="WorkShield API",
         version="0.1.0",
+        debug=settings.app_debug,
+        openapi_url="/openapi.json" if settings.api_docs_enabled else None,
         lifespan=lifespan_handler,
     )
 

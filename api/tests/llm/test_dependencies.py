@@ -47,7 +47,8 @@ def test_get_chat_model_defaults_reasoning_to_off(monkeypatch) -> None:
     assert calls == [(settings, ReasoningMode.OFF)]
 
 
-def test_get_mcp_runtime_reads_lifespan_state() -> None:
+@pytest.mark.asyncio
+async def test_get_mcp_runtime_reads_lifespan_state() -> None:
     app = FastAPI()
     runtime = WorkShieldMCPRuntime(
         client=SimpleNamespace(),
@@ -59,15 +60,16 @@ def test_get_mcp_runtime_reads_lifespan_state() -> None:
     app.state.workshield_mcp = runtime
     request = Request({"type": "http", "app": app})
 
-    assert get_mcp_runtime(request) is runtime
+    assert await get_mcp_runtime(request) is runtime
     assert get_mcp_tools(runtime) is runtime.tools
 
 
-def test_get_mcp_runtime_returns_503_before_lifespan() -> None:
+@pytest.mark.asyncio
+async def test_get_mcp_runtime_returns_503_before_lifespan() -> None:
     request = Request({"type": "http", "app": FastAPI()})
 
     with pytest.raises(HTTPException) as exc_info:
-        get_mcp_runtime(request)
+        await get_mcp_runtime(request)
 
     assert exc_info.value.status_code == 503
 

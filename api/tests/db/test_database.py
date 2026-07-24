@@ -48,6 +48,10 @@ def test_sqlite_foreign_keys_are_enabled(database: Database) -> None:
     assert enabled == 1
 
 
+def test_database_readiness_executes_connection_check(database: Database) -> None:
+    assert database.is_ready() is True
+
+
 def test_file_database_survives_engine_restart(tmp_path: Path) -> None:
     database_path = tmp_path / "persistent.db"
     database_url = f"sqlite+pysqlite:///{database_path}"

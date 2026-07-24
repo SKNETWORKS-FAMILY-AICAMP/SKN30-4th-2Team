@@ -1,10 +1,8 @@
 """환경 설정과 FastAPI 의존성 주입 계약을 검증한다."""
 
 import pytest
-from fastapi.routing import APIRoute
 from pydantic import ValidationError
 
-from app.api.system import router as system_router
 from app.config import MCPTransport, Settings, get_settings
 
 
@@ -52,13 +50,21 @@ def test_database_defaults_to_file_sqlite() -> None:
     assert settings.database_echo is False
 
 
-def test_ready_health_declares_settings_dependency() -> None:
-    route = next(
-        route
-        for route in system_router.routes
-        if isinstance(route, APIRoute) and route.path == "/health/ready"
-    )
+def test_production_rejects_debug_mode() -> None:
+    with pytest.raises(ValidationError, match="APP_DEBUG=false"):
+        Settings(
+            app_env="prod",
+            llm_provider="ollama",
+            app_debug=True,
+            database_echo=False,
+        )
 
-    dependency_calls = {dependency.call for dependency in route.dependant.dependencies}
 
-    assert get_settings in dependency_calls
+def test_production_rejects_database_query_logging() -> None:
+    with pytest.raises(ValidationError, match="DATABASE_ECHO=false"):
+        Settings(
+            app_env="prod",
+            llm_provider="ollama",
+            app_debug=False,
+            database_echo=True,
+        )

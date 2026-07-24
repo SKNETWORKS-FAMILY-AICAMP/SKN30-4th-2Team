@@ -3,8 +3,9 @@
 import sqlite3
 from pathlib import Path
 
-from sqlalchemy import Engine, create_engine, event
+from sqlalchemy import Engine, create_engine, event, text
 from sqlalchemy.engine import make_url
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import API_ROOT
@@ -63,6 +64,14 @@ class Database:
     def session(self) -> Session:
         """명시적으로 닫아야 하는 새 SQLAlchemy Session을 반환한다."""
         return self.session_factory()
+
+    def is_ready(self) -> bool:
+        """새 연결에서 간단한 쿼리를 실행해 SQLite 준비 상태를 확인한다."""
+        try:
+            with self.engine.connect() as connection:
+                return connection.scalar(text("SELECT 1")) == 1
+        except SQLAlchemyError:
+            return False
 
     def dispose(self) -> None:
         """Engine의 연결 풀을 정리한다."""

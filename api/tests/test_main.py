@@ -7,6 +7,8 @@ from types import SimpleNamespace
 import pytest
 
 import app.lifespan as lifespan_module
+import app.factory as factory_module
+from app.config import Settings
 from app.db.database import Database
 from app.factory import create_app
 from app.llm.mcp.types import WorkShieldMCPRuntime
@@ -21,6 +23,31 @@ def test_create_app_registers_common_routes() -> None:
     assert created_app.title == "WorkShield API"
     assert "/health/live" in route_paths
     assert "/health/ready" in route_paths
+
+
+def test_production_can_disable_debug_and_openapi(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(
+        app_env="prod",
+        llm_provider="ollama",
+        app_debug=False,
+        api_docs_enabled=False,
+        database_echo=False,
+    )
+    monkeypatch.setattr(factory_module, "get_settings", lambda: settings)
+
+    created_app = create_app()
+
+    assert created_app.debug is False
+    assert created_app.openapi_url is None
+    route_paths = {
+        route.path
+        for route in created_app.routes
+        if hasattr(route, "path")
+    }
+    assert "/docs" not in route_paths
+    assert "/redoc" not in route_paths
 
 
 @pytest.mark.asyncio

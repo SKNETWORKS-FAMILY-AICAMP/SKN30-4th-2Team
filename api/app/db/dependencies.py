@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.db.database import Database
 
 
-def get_database(request: Request) -> Database:
+async def get_database(request: Request) -> Database:
     """lifespan에서 준비한 Database를 반환한다."""
     database = getattr(request.app.state, "database", None)
     if not isinstance(database, Database):

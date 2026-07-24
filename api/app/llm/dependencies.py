@@ -16,7 +16,7 @@ def get_chat_model(settings: SettingsDep) -> BaseChatModel:
     """선택 provider의 기본 non-reasoning chat model을 반환한다."""
     return create_chat_model(settings, ReasoningMode.OFF)
 
-def get_mcp_runtime(request: Request) -> WorkShieldMCPRuntime:
+async def get_mcp_runtime(request: Request) -> WorkShieldMCPRuntime:
     """FastAPI lifespan에서 준비한 WorkShield MCP runtime을 반환한다."""
     runtime = getattr(request.app.state, "workshield_mcp", None)
     if not isinstance(runtime, WorkShieldMCPRuntime):

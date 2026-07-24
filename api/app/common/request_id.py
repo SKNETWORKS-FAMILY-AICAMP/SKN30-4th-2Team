@@ -1,9 +1,12 @@
 """요청 단위 식별자를 생성하고 응답 헤더로 전달한다."""
 
 from collections.abc import Awaitable, Callable
+from time import perf_counter
 from uuid import uuid4
 
 from fastapi import FastAPI, Request, Response
+
+from app.common.logging import log_event
 
 
 REQUEST_ID_HEADER = "X-Request-ID"
@@ -29,10 +32,30 @@ async def add_request_id(
     request: Request,
     call_next: Callable[[Request], Awaitable[Response]],
 ) -> Response:
-    """요청에 서버 생성 ID를 부여하고 같은 값을 응답 헤더에 싣는다."""
+    """요청 ID와 처리 시간을 안전한 메타데이터로 기록한다."""
     request.state.request_id = new_request_id()
-    response = await call_next(request)
+    started_at = perf_counter()
+    try:
+        response = await call_next(request)
+    except Exception as error:
+        log_event(
+            event="http.request.completed",
+            request_id=get_request_id(request),
+            state="failed",
+            duration_ms=round((perf_counter() - started_at) * 1000, 2),
+        )
+        # 지연 import로 예외 처리 모듈과의 순환 import를 피한다.
+        from app.common.exception_handlers import unexpected_error_handler
+
+        return await unexpected_error_handler(request, error)
+
     response.headers[REQUEST_ID_HEADER] = get_request_id(request)
+    log_event(
+        event="http.request.completed",
+        request_id=get_request_id(request),
+        state=response.status_code,
+        duration_ms=round((perf_counter() - started_at) * 1000, 2),
+    )
     return response
 
 

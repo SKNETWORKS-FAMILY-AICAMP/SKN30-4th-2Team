@@ -37,7 +37,7 @@
           "system"
         ],
         "summary": "Readiness",
-        "description": "비밀값 없이 현재 애플리케이션 설정 준비 상태를 반환한다.",
+        "description": "SQLite 연결과 MCP 런타임 초기화 여부를 확인한다.",
         "operationId": "readiness_health_ready_get",
         "responses": {
           "200": {

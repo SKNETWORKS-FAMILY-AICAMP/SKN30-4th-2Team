@@ -2,7 +2,9 @@
 
 from fastapi import APIRouter
 
-from app.config import SettingsDep
+from app.common.errors import ExternalServiceError
+from app.db.dependencies import DatabaseDep
+from app.llm.dependencies import MCPRuntimeDep
 
 
 router = APIRouter(prefix="/health", tags=["system"])
@@ -15,10 +17,20 @@ async def liveness() -> dict[str, str]:
 
 
 @router.get("/ready")
-async def readiness(settings: SettingsDep) -> dict[str, str]:
-    """비밀값 없이 현재 애플리케이션 설정 준비 상태를 반환한다."""
+async def readiness(
+    database: DatabaseDep,
+    _mcp_runtime: MCPRuntimeDep,
+) -> dict[str, str]:
+    """SQLite 연결과 MCP 런타임 초기화 여부를 확인한다."""
+    if not database.is_ready():
+        raise ExternalServiceError(
+            code="DATABASE_UNAVAILABLE",
+            message="데이터베이스가 준비되지 않았습니다.",
+            retryable=True,
+        )
+
     return {
         "status": "ok",
-        "environment": settings.app_env,
-        "llm_provider": settings.llm_provider,
+        "database": "ok",
+        "mcp": "ok",
     }
