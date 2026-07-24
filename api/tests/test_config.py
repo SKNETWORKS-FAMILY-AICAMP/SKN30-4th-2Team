@@ -65,7 +65,7 @@ def test_upload_and_session_settings_have_expected_defaults() -> None:
     assert settings.max_upload_size_bytes == 10 * 1024 * 1024
     assert settings.supported_file_extensions == DEFAULT_SUPPORTED_FILE_EXTENSIONS
     assert settings.temp_upload_dir.as_posix() == "data/99_uploads"
-    assert settings.session_ttl_seconds == 60 * 60
+    assert settings.session_ttl_seconds == 30 * 60
 
 
 def test_supported_file_extensions_accepts_comma_separated_value() -> None:

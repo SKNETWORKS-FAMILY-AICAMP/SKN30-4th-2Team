@@ -86,7 +86,11 @@ class Settings(BaseSettings):
         DEFAULT_SUPPORTED_FILE_EXTENSIONS
     )
     temp_upload_dir: Path = Path("data/99_uploads")
-    session_ttl_seconds: int = Field(default=60 * 60, gt=0)
+    session_ttl_seconds: int = Field(
+        default=30 * 60,
+        gt=0,
+        description="마지막 사용자 액션 이후 세션을 유지할 비활성 시간(초).",
+    )
 
     @field_validator("supported_file_extensions", mode="before")
     @classmethod
