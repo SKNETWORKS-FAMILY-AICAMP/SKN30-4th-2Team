@@ -56,6 +56,598 @@
           }
         }
       }
+    },
+    "/api/v1/review-sessions": {
+      "post": {
+        "tags": [
+          "review-sessions"
+        ],
+        "summary": "Create Session",
+        "description": "계약서 파일을 저장하고 익명 검토 세션을 생성한다.",
+        "operationId": "create_session_api_v1_review_sessions_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_create_session_api_v1_review_sessions_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review-sessions/{session_id}": {
+      "get": {
+        "tags": [
+          "review-sessions"
+        ],
+        "summary": "Get Session",
+        "description": "Cookie 소유자에게만 세션 상태를 반환한다.",
+        "operationId": "get_session_api_v1_review_sessions__session_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review-sessions/{session_id}/contract-type": {
+      "patch": {
+        "tags": [
+          "review-sessions"
+        ],
+        "summary": "Choose Contract Type",
+        "description": "소유 세션의 계약 유형을 확정한다.",
+        "operationId": "choose_contract_type_api_v1_review_sessions__session_id__contract_type_patch",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractTypeSelectionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/review-sessions/{session_id}/out-of-scope-confirmation": {
+      "post": {
+        "tags": [
+          "review-sessions"
+        ],
+        "summary": "Confirm Scope",
+        "description": "소유 세션의 범위 외 계속 진행을 확인한다.",
+        "operationId": "confirm_scope_api_v1_review_sessions__session_id__out_of_scope_confirmation_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "session_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Session Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OutOfScopeConfirmationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Start Review",
+        "description": "Cookie 소유 세션의 검토를 멱등적으로 접수한다.",
+        "operationId": "start_review_api_v1_reviews_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{review_id}/results": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Results",
+        "description": "완료된 검토 결과를 Cookie 소유자에게만 반환한다.",
+        "operationId": "get_results_api_v1_reviews__review_id__results_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Review Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{review_id}/events": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Review Events",
+        "description": "Cookie 소유 검토의 진행 상태를 SSE로 전달한다.",
+        "operationId": "review_events_api_v1_reviews__review_id__events_get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Review Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{review_id}": {
+      "get": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Get Review",
+        "description": "검토 상태를 Cookie 소유자에게만 반환한다.",
+        "operationId": "get_review_api_v1_reviews__review_id__get",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Review Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reviews/{review_id}/retry": {
+      "post": {
+        "tags": [
+          "reviews"
+        ],
+        "summary": "Retry",
+        "description": "재시도 가능한 실패에 대해 새 검토 ID를 발급한다.",
+        "operationId": "retry_api_v1_reviews__review_id__retry_post",
+        "security": [
+          {
+            "APIKeyCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Review Id"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Idempotency-Key"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_create_session_api_v1_review_sessions_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_create_session_api_v1_review_sessions_post"
+      },
+      "ContractTypeSelectionRequest": {
+        "properties": {
+          "selected_contract_type": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Selected Contract Type"
+          },
+          "selection_source": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Selection Source",
+            "default": "MANUAL"
+          }
+        },
+        "type": "object",
+        "required": [
+          "selected_contract_type"
+        ],
+        "title": "ContractTypeSelectionRequest",
+        "description": "계약 유형 선택 요청."
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "OutOfScopeConfirmationRequest": {
+        "properties": {
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "confirmed"
+        ],
+        "title": "OutOfScopeConfirmationRequest",
+        "description": "범위 외 계속 진행 확인 요청."
+      },
+      "ReviewCreateRequest": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Session Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "session_id"
+        ],
+        "title": "ReviewCreateRequest",
+        "description": "검토 시작 요청."
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": {
+      "APIKeyCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "workshield_session"
+      }
     }
   }
 }

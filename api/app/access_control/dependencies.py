@@ -34,12 +34,12 @@ def _resource_not_found() -> NotFoundError:
     )
 
 
-def require_owned_review_session(
+def resolve_owned_session(
     session_id: str,
-    db_session: DbSessionDep,
-    access_token: SessionCookie = None,
+    access_token: str | None,
+    db_session,
 ) -> ReviewSession:
-    """Cookie 토큰이 소유한 미만료 검토 세션만 반환한다."""
+    """주어진 Cookie가 소유한 미만료 세션을 반환한다."""
     if not access_token:
         raise _resource_not_found()
 
@@ -58,18 +58,12 @@ def require_owned_review_session(
     return entity
 
 
-OwnedReviewSessionDep = Annotated[
-    ReviewSession,
-    Depends(require_owned_review_session),
-]
-
-
-def require_owned_review(
+def resolve_owned_review(
     review_id: str,
-    db_session: DbSessionDep,
-    access_token: SessionCookie = None,
+    access_token: str | None,
+    db_session,
 ) -> Review:
-    """Cookie 토큰이 소유한 미만료 검토만 반환한다."""
+    """주어진 Cookie가 소유한 미만료 검토를 반환한다."""
     if not access_token:
         raise _resource_not_found()
 
@@ -86,6 +80,30 @@ def require_owned_review(
             next_action="START_NEW_REVIEW",
         )
     return entity
+
+
+def require_owned_review_session(
+    session_id: str,
+    db_session: DbSessionDep,
+    access_token: SessionCookie = None,
+) -> ReviewSession:
+    """Cookie 토큰이 소유한 미만료 검토 세션만 반환한다."""
+    return resolve_owned_session(session_id, access_token, db_session)
+
+
+OwnedReviewSessionDep = Annotated[
+    ReviewSession,
+    Depends(require_owned_review_session),
+]
+
+
+def require_owned_review(
+    review_id: str,
+    db_session: DbSessionDep,
+    access_token: SessionCookie = None,
+) -> Review:
+    """Cookie 토큰이 소유한 미만료 검토만 반환한다."""
+    return resolve_owned_review(review_id, access_token, db_session)
 
 
 OwnedReviewDep = Annotated[Review, Depends(require_owned_review)]

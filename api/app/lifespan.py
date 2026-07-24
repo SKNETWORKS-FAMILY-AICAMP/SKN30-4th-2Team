@@ -55,6 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     ).cleanup_expired_and_orphaned()
     app.state.database = database
     app.state.file_storage = file_storage
+    app.state.review_tasks = set()
     cleanup_task = asyncio.create_task(
         _periodic_storage_cleanup(
             database,
@@ -70,6 +71,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             finally:
                 del app.state.workshield_mcp
     finally:
+        for task in getattr(app.state, "review_tasks", set()):
+            task.cancel()
+        if hasattr(app.state, "review_tasks"):
+            del app.state.review_tasks
         cleanup_task.cancel()
         with suppress(asyncio.CancelledError):
             await cleanup_task
