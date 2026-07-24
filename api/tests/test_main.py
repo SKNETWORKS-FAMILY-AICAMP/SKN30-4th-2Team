@@ -1,17 +1,59 @@
-"""FastAPI 애플리케이션의 MCP lifespan 연결을 검증한다."""
+"""FastAPI 애플리케이션 팩토리와 MCP lifespan 연결을 검증한다."""
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
 
-import main
+import app.lifespan as lifespan_module
+import app.factory as factory_module
+from app.config import Settings
+from app.db.database import Database
+from app.factory import create_app
 from app.llm.mcp.types import WorkShieldMCPRuntime
+from app.lifespan import lifespan
+from main import app
+
+
+def test_create_app_registers_common_routes() -> None:
+    created_app = create_app()
+    route_paths = set(created_app.openapi()["paths"])
+
+    assert created_app.title == "WorkShield API"
+    assert "/health/live" in route_paths
+    assert "/health/ready" in route_paths
+
+
+def test_production_can_disable_debug_and_openapi(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    settings = Settings(
+        app_env="prod",
+        llm_provider="ollama",
+        app_debug=False,
+        api_docs_enabled=False,
+        database_echo=False,
+    )
+    monkeypatch.setattr(factory_module, "get_settings", lambda: settings)
+
+    created_app = create_app()
+
+    assert created_app.debug is False
+    assert created_app.openapi_url is None
+    route_paths = {
+        route.path
+        for route in created_app.routes
+        if hasattr(route, "path")
+    }
+    assert "/docs" not in route_paths
+    assert "/redoc" not in route_paths
 
 
 @pytest.mark.asyncio
 async def test_lifespan_exposes_and_cleans_mcp_runtime(
     monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
 ) -> None:
     runtime = WorkShieldMCPRuntime(
         client=SimpleNamespace(),
@@ -30,12 +72,22 @@ async def test_lifespan_exposes_and_cleans_mcp_runtime(
         finally:
             closed = True
 
-    monkeypatch.setattr(main, "open_workshield_mcp", fake_open)
+    database_path = tmp_path / "lifespan.db"
+    settings = SimpleNamespace(
+        database_url=f"sqlite+pysqlite:///{database_path}",
+        database_echo=False,
+    )
+    monkeypatch.setattr(lifespan_module, "get_settings", lambda: settings)
+    monkeypatch.setattr(lifespan_module, "open_workshield_mcp", fake_open)
 
-    async with main.lifespan(main.app):
-        assert main.app.state.workshield_mcp is runtime
+    async with lifespan(app):
+        assert app.state.workshield_mcp is runtime
+        assert isinstance(app.state.database, Database)
+        assert database_path.is_file()
         assert closed is False
 
     with pytest.raises(AttributeError):
-        _ = main.app.state.workshield_mcp
+        _ = app.state.workshield_mcp
+    with pytest.raises(AttributeError):
+        _ = app.state.database
     assert closed is True
