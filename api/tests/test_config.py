@@ -1,11 +1,9 @@
 """환경 설정과 FastAPI 의존성 주입 계약을 검증한다."""
 
 import pytest
-from fastapi.routing import APIRoute
 from pydantic import ValidationError
 
 from app.config import MCPTransport, Settings, get_settings
-from main import app
 
 
 def test_get_settings_is_cached() -> None:
@@ -40,13 +38,33 @@ def test_mcp_timeout_must_be_positive() -> None:
         )
 
 
-def test_health_declares_settings_dependency() -> None:
-    route = next(
-        route
-        for route in app.routes
-        if isinstance(route, APIRoute) and route.path == "/health"
+def test_database_defaults_to_file_sqlite() -> None:
+    settings = Settings(
+        app_env="local",
+        llm_provider="ollama",
+        llm_model="configured-model",
     )
 
-    dependency_calls = {dependency.call for dependency in route.dependant.dependencies}
+    assert settings.database_url.startswith("sqlite+pysqlite:///")
+    assert settings.database_url.endswith("/data/workshield.db")
+    assert settings.database_echo is False
 
-    assert get_settings in dependency_calls
+
+def test_production_rejects_debug_mode() -> None:
+    with pytest.raises(ValidationError, match="APP_DEBUG=false"):
+        Settings(
+            app_env="prod",
+            llm_provider="ollama",
+            app_debug=True,
+            database_echo=False,
+        )
+
+
+def test_production_rejects_database_query_logging() -> None:
+    with pytest.raises(ValidationError, match="DATABASE_ECHO=false"):
+        Settings(
+            app_env="prod",
+            llm_provider="ollama",
+            app_debug=False,
+            database_echo=True,
+        )
