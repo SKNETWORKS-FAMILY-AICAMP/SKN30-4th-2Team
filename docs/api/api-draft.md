@@ -6,7 +6,7 @@
 
 ## 0. 현재 구현 경계
 
-현재 확인된 프로젝트 소스는 **MCP 서버와 MCP 도구 계약**이다. 이 문서의 REST API는 웹 애플리케이션 백엔드가 MCP를 감싸기 위한 목표 계약이며, 구현 완료 상태를 의미하지 않는다.
+현재 MVP REST API는 metadata, 세션 생성·복구, 계약 유형 확정, 범위 확인, 검토 접수·상태·결과·재시도·SSE, grounding, chat, suggestions, 결과 폐기형 취소까지 구현되어 있다. 멱등 요청은 `idempotency_records`의 scope·세션·요청 fingerprint로 검증하며, chat과 suggestions 응답 스냅샷은 세션 TTL 안에서만 보존한다.
 
 신규 연동은 다음 MCP 도구를 우선 사용한다.
 
@@ -57,7 +57,7 @@
 | 제안 | POST | `/api/v1/reviews/{review_id}/suggestions` | 단일 협의 문구 생성 | MVP |
 | 제안 편집 | PATCH | `/api/v1/reviews/{review_id}/suggestions/{suggestion_id}` | 제안 편집·임시 저장 | MVP 이후 |
 | 단일 조항 재검토 | POST | `/api/v1/reviews/{review_id}/clause-reviews` | 수정 문구 단일 조항 재검토 | MVP 이후 |
-| 취소 | DELETE | `/api/v1/reviews/{review_id}` | 검토 작업 취소 | MVP 이후 |
+| 취소 | DELETE | `/api/v1/reviews/{review_id}` | 결과 폐기·임시 파일 정리 | MVP |
 
 표준조항의 전체 본문·출처·버전은 `review_contract_candidates` 결과에 포함되므로 MVP에서는 별도 표준조항 조회 API를 필수로 두지 않는다.
 
@@ -198,7 +198,7 @@
       "confidence_score": false,
       "suggestion_edit": false,
       "single_clause_rereview": false,
-      "server_side_cancel": false
+      "server_side_cancel": true
     }
   }
 }
