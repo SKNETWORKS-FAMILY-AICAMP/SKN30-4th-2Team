@@ -1,4 +1,4 @@
-import { Shield } from 'lucide-react'
+﻿import { ShieldCheck } from 'lucide-react'
 import type { Screen } from '../types'
 
 interface Props {
@@ -16,12 +16,10 @@ export default function Header({ currentScreen, onNavigate }: Props) {
         {/* Logo */}
         <button
           onClick={() => onNavigate('upload')}
-          className="flex items-center gap-2.5 shrink-0 group"
+          className="flex items-center gap-2 shrink-0 group"
         >
-          <div className="w-8 h-8 bg-[#2563EB] rounded-lg flex items-center justify-center group-hover:bg-[#1D4ED8] transition-colors">
-            <Shield className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-semibold text-[#1E293B] text-[17px] tracking-tight">WorkShield</span>
+          <ShieldCheck className="w-7 h-7 text-[#6366F1] group-hover:text-[#4F46E5] transition-colors" strokeWidth={2} />
+          <span className="font-semibold text-[#1E293B] text-[18px] tracking-tight">WorkShield</span>
         </button>
 
         {/* Nav links */}
@@ -30,7 +28,7 @@ export default function Header({ currentScreen, onNavigate }: Props) {
             onClick={() => onNavigate('upload')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               isReview
-                ? 'bg-[#EFF6FF] text-[#1E293B]'
+                ? 'bg-[#EEF2FF] text-[#1E293B]'
                 : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F8FAFC]'
             }`}
           >
@@ -40,7 +38,7 @@ export default function Header({ currentScreen, onNavigate }: Props) {
             onClick={() => onNavigate('results')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               isResult
-                ? 'bg-[#EFF6FF] text-[#1E293B]'
+                ? 'bg-[#EEF2FF] text-[#1E293B]'
                 : 'text-[#475569] hover:text-[#1E293B] hover:bg-[#F8FAFC]'
             }`}
           >
@@ -54,7 +52,7 @@ export default function Header({ currentScreen, onNavigate }: Props) {
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse-dot" />
             <span className="text-xs text-[#475569]">세션 유지중 · 60분 남음</span>
           </div>
-          <div className="w-8 h-8 rounded-full bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center text-xs font-semibold text-[#2563EB]">
+          <div className="w-8 h-8 rounded-full bg-[#EEF2FF] border border-[#C7D2FE] flex items-center justify-center text-xs font-semibold text-[#6366F1]">
             김
           </div>
         </div>

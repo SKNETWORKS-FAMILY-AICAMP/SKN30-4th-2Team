@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { Check, AlertCircle, RefreshCw, ChevronRight } from 'lucide-react'
 import { mockApi } from '../api/mockApi'
 import { ReviewProgress } from '../types'
@@ -90,13 +90,13 @@ export default function ProcessingScreen({ reviewId, onDone }: Props) {
         <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-[#1E293B]">검토 진행 상태</p>
-            <p className="text-xs font-medium text-[#2563EB]">
+            <p className="text-xs font-medium text-[#6366F1]">
               {mode === 'done' ? '완료됨' : '처리 중'}
             </p>
           </div>
           <div className="h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#2563EB] rounded-full transition-all duration-700"
+              className="h-full bg-[#6366F1] rounded-full transition-all duration-700"
               style={{ width: `${progress?.percent || 0}%` }}
             />
           </div>
@@ -118,16 +118,16 @@ export default function ProcessingScreen({ reviewId, onDone }: Props) {
           const ahead = i > activeStep && mode !== 'done'
 
           return (
-            <div key={step.id} className={`flex items-center gap-4 px-5 py-4 ${current ? 'bg-[#EFF6FF]/40' : ''}`}>
+            <div key={step.id} className={`flex items-center gap-4 px-5 py-4 ${current ? 'bg-[#EEF2FF]/40' : ''}`}>
               {/* Status icon */}
               <div className="w-7 h-7 shrink-0 flex items-center justify-center">
                 {done && !error && (
-                  <div className="w-7 h-7 rounded-full bg-[#2563EB] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-full bg-[#6366F1] flex items-center justify-center">
                     <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                   </div>
                 )}
                 {current && (
-                  <div className="w-7 h-7 rounded-full border-2 border-[#2563EB] border-t-transparent animate-spin-slow" />
+                  <div className="w-7 h-7 rounded-full border-2 border-[#6366F1] border-t-transparent animate-spin-slow" />
                 )}
                 {error && (
                   <div className="w-7 h-7 rounded-full bg-rose-100 flex items-center justify-center">
@@ -153,7 +153,7 @@ export default function ProcessingScreen({ reviewId, onDone }: Props) {
                 <span className="text-[11px] text-[#475569] shrink-0">완료</span>
               )}
               {current && (
-                <span className="text-[11px] text-[#2563EB] font-medium shrink-0 animate-pulse-dot">진행 중</span>
+                <span className="text-[11px] text-[#6366F1] font-medium shrink-0 animate-pulse-dot">진행 중</span>
               )}
             </div>
           )
@@ -180,7 +180,7 @@ export default function ProcessingScreen({ reviewId, onDone }: Props) {
         {mode === 'error' && (
           <button
             onClick={() => { setActiveStep(0); setProgress(null); setMode('running') }}
-            className="flex items-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+            className="flex items-center gap-2 px-5 py-3 bg-[#6366F1] text-white rounded-xl text-sm font-medium hover:bg-[#4F46E5] transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             다시 시도
@@ -189,7 +189,7 @@ export default function ProcessingScreen({ reviewId, onDone }: Props) {
         {mode === 'done' && (
           <button
             onClick={onDone}
-            className="flex items-center gap-2 px-6 py-3 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+            className="flex items-center gap-2 px-6 py-3 bg-[#6366F1] text-white rounded-xl text-sm font-medium hover:bg-[#4F46E5] transition-colors"
           >
             검토 결과 확인하기
             <ChevronRight className="w-4 h-4" />

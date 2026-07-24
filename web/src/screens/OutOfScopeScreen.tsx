@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowLeft, ChevronRight, FileQuestion } from 'lucide-react'
+﻿import { AlertCircle, ArrowLeft, ChevronRight, FileQuestion } from 'lucide-react'
 
 interface Props {
   onBack: () => void
@@ -27,8 +27,8 @@ export default function OutOfScopeScreen({ onBack, onContinue }: Props) {
       <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
         <p className="text-[11px] font-semibold text-[#64748B] uppercase tracking-wider mb-3">선택한 계약 유형</p>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-[#EFF6FF] rounded-xl flex items-center justify-center shrink-0">
-            <FileQuestion className="w-5 h-5 text-[#2563EB]" />
+          <div className="w-10 h-10 bg-[#EEF2FF] rounded-xl flex items-center justify-center shrink-0">
+            <FileQuestion className="w-5 h-5 text-[#6366F1]" />
           </div>
           <div>
             <p className="text-sm font-semibold text-[#1E293B]">프리랜서 계약서</p>
@@ -82,7 +82,7 @@ export default function OutOfScopeScreen({ onBack, onContinue }: Props) {
         </button>
         <button
           onClick={onContinue}
-          className="flex items-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+          className="flex items-center gap-2 px-5 py-3 bg-[#6366F1] text-white rounded-xl text-sm font-medium hover:bg-[#4F46E5] transition-colors"
         >
           계속 검토하기
           <ChevronRight className="w-4 h-4" />

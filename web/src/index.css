@@ -1,13 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap');
 @import 'tailwindcss';
 
 @theme {
   --font-sans: 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --color-navy: #2563EB;
-  --color-navy-hover: #1D4ED8;
-  --color-blue: #2563EB;
-  --color-blue-light: #EFF6FF;
-  --color-blue-mid: #BFDBFE;
+  --color-navy: #6366F1;
+  --color-navy-hover: #4F46E5;
+  --color-blue: #6366F1;
+  --color-blue-light: #EEF2FF;
+  --color-blue-mid: #C7D2FE;
   --color-gray-n: #475569;
   --color-gray-l: #F8FAFC;
   --color-border: #E2E8F0;

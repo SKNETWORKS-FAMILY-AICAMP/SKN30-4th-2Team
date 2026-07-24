@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+﻿import { useState, useRef, useEffect } from 'react'
 import { ArrowLeft, Send, BookOpen, Scale, Copy, Check, AlertCircle, ChevronDown } from 'lucide-react'
 
 interface Props { onBack: () => void }
@@ -148,7 +148,7 @@ export default function ChatbotScreen({ onBack }: Props) {
                                 key={i}
                                 className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-full border ${
                                   s.type === 'law'
-                                    ? 'bg-[#EFF6FF] border-[#BFDBFE] text-[#2563EB]'
+                                    ? 'bg-[#EEF2FF] border-[#C7D2FE] text-[#6366F1]'
                                     : 'bg-[#F8FAFC] border-[#E2E8F0] text-[#475569]'
                                 }`}
                               >
@@ -163,7 +163,7 @@ export default function ChatbotScreen({ onBack }: Props) {
                   </div>
                 )}
                 {msg.role === 'user' && (
-                  <div className="bg-[#2563EB] text-white rounded-xl rounded-tr-sm px-4 py-3 max-w-[80%]">
+                  <div className="bg-[#6366F1] text-white rounded-xl rounded-tr-sm px-4 py-3 max-w-[80%]">
                     <p className="text-sm leading-relaxed">{msg.text}</p>
                   </div>
                 )}
@@ -179,7 +179,7 @@ export default function ChatbotScreen({ onBack }: Props) {
                 <button
                   key={i}
                   onClick={() => send(s)}
-                  className="shrink-0 px-3 py-1.5 text-[11px] text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] rounded-full hover:bg-[#BFDBFE]/40 transition-colors whitespace-nowrap"
+                  className="shrink-0 px-3 py-1.5 text-[11px] text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] rounded-full hover:bg-[#C7D2FE]/40 transition-colors whitespace-nowrap"
                 >
                   {s}
                 </button>
@@ -196,12 +196,12 @@ export default function ChatbotScreen({ onBack }: Props) {
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), send(input))}
                 placeholder="검토 결과에 대해 질문해 주세요"
-                className="flex-1 px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#1E293B] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                className="flex-1 px-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-sm text-[#1E293B] placeholder:text-[#64748B] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]"
               />
               <button
                 onClick={() => send(input)}
                 disabled={!input.trim()}
-                className="w-10 h-10 bg-[#2563EB] text-white rounded-xl flex items-center justify-center hover:bg-[#1D4ED8] disabled:bg-[#E2E8F0] disabled:text-[#64748B] transition-colors shrink-0"
+                className="w-10 h-10 bg-[#6366F1] text-white rounded-xl flex items-center justify-center hover:bg-[#4F46E5] disabled:bg-[#E2E8F0] disabled:text-[#64748B] transition-colors shrink-0"
                 aria-label="전송"
               >
                 <Send className="w-4 h-4" />
@@ -214,7 +214,7 @@ export default function ChatbotScreen({ onBack }: Props) {
         <div className="space-y-4">
           <button
             onClick={() => setShowProposal(!showProposal)}
-            className="w-full flex items-center justify-between px-5 py-4 bg-white border border-[#E2E8F0] rounded-xl hover:border-[#BFDBFE] transition-colors"
+            className="w-full flex items-center justify-between px-5 py-4 bg-white border border-[#E2E8F0] rounded-xl hover:border-[#C7D2FE] transition-colors"
           >
             <div className="text-left">
               <p className="text-sm font-semibold text-[#1E293B]">협의 문구 제안</p>
@@ -246,7 +246,7 @@ export default function ChatbotScreen({ onBack }: Props) {
                   </div>
                   <div>
                     <p className="text-[10px] font-semibold text-[#64748B] uppercase tracking-wider mb-1">참고 표준조항</p>
-                    <p className="text-xs text-[#2563EB]">{PROPOSAL.reference}</p>
+                    <p className="text-xs text-[#6366F1]">{PROPOSAL.reference}</p>
                   </div>
                 </div>
 

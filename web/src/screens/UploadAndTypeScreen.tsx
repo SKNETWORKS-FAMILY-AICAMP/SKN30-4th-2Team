@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+﻿import { useState, useRef } from 'react'
 import {
   UploadCloud, FileText, CheckCircle2, X, ChevronRight, BriefcaseBusiness, Handshake
 } from 'lucide-react'
@@ -15,7 +15,7 @@ interface Props {
 
 type UploadState = 'idle' | 'uploading' | 'success'
 
-const FORMATS = ['HWP', 'HWPX', 'HWPML', 'PDF', 'XLS', 'XLSX', 'DOCX']
+const FORMATS = ['HWP', 'HWPX', 'PDF', 'DOCX']
 
 const CONTRACT_TYPES = [
   { id: 'SI_SUBCONTRACT', name: 'SI 하도급', sub: 'SI 구축 하도급 계약 비교 기준입니다.' },
@@ -114,7 +114,7 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
       {/* ── 1. Upload Section ── */}
       <section className="space-y-6">
         <div>
-          <p className="text-xs font-semibold tracking-[.14em] text-[#2563EB] mb-3">1단계 · 파일 업로드</p>
+          <p className="text-xs font-semibold tracking-[.14em] text-[#6366F1] mb-3">1단계 · 파일 업로드</p>
           <h1 className="text-[22px] font-semibold text-[#1E293B] tracking-tight mb-2">
             검토할 계약서를 업로드해 주세요
           </h1>
@@ -142,39 +142,39 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
               if (file) processFile(file)
             }}
             onClick={() => fileRef.current?.click()}
-            className={`border-2 border-dashed rounded-2xl p-10 sm:p-14 flex flex-col items-center text-center cursor-pointer transition-all duration-200 ${
+            className={`relative min-h-[340px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-200 ${
               isDragging
-                ? 'border-[#2563EB] bg-[#EFF6FF]'
-                : 'border-[#CBD5E1] bg-white hover:border-[#2563EB] hover:bg-[#EFF6FF]/40'
+                ? 'border-[#6366F1] bg-[#EEF2FF]'
+                : 'border-[#CBD5E1] bg-white hover:border-[#6366F1] hover:bg-[#EEF2FF]/40'
             }`}
           >
             <input ref={fileRef} type="file" className="hidden" accept=".hwp,.hwpx,.hwpml,.pdf,.xls,.xlsx,.docx" onChange={handleFileChange} />
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-colors ${
-              isDragging ? 'bg-[#2563EB]' : 'bg-[#EFF6FF]'
-            }`}>
-              <UploadCloud className={`w-8 h-8 transition-colors ${isDragging ? 'text-white' : 'text-[#2563EB]'}`} />
-            </div>
-            <p className="text-base font-medium text-[#1E293B] mb-4">
-              파일을 이곳에 드래그하거나 직접 선택하세요
-            </p>
             
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-              <span className="text-xs text-[#64748B] mr-2">지원 형식:</span>
-              {FORMATS.map(f => (
-                <span key={f} className="px-2 py-1 bg-[#F8FAFC] border border-[#E2E8F0] rounded text-[11px] font-mono font-medium text-[#475569]">
-                  .{f.toLowerCase()}
-                </span>
-              ))}
-            </div>
-            
-            <p className="text-xs text-[#64748B] mb-8 font-medium">최대 10MB까지 업로드 가능합니다</p>
+            <div className="flex-1 flex flex-col items-center justify-center w-full px-6 py-12">
+              <div className={`w-24 h-24 rounded-3xl flex items-center justify-center mb-6 transition-colors shadow-sm ${
+                isDragging ? 'bg-[#6366F1]' : 'bg-[#EEF2FF]'
+              }`}>
+                <UploadCloud className={`w-14 h-14 transition-colors ${isDragging ? 'text-white' : 'text-[#6366F1]'}`} />
+              </div>
+              <p className="text-[17px] font-semibold text-[#1E293B] mb-2 tracking-tight">
+                파일을 이곳에 드래그하거나 직접 선택하세요
+              </p>
+              
+              <p className="text-xs font-medium text-[#94A3B8] tracking-[0.2em] mb-8">
+                {FORMATS.join(' · ')}
+              </p>
 
-            <button
-              onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
-              className="px-5 py-2.5 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
-            >
-              파일 선택
-            </button>
+              <button
+                onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
+                className="px-6 py-3 bg-[#6366F1] text-white rounded-xl text-sm font-medium hover:bg-[#4F46E5] transition-colors shadow-sm"
+              >
+                파일 선택
+              </button>
+            </div>
+            
+            <div className="absolute bottom-5 left-0 right-0 text-center">
+              <p className="text-xs text-[#64748B] font-medium">최대 10MB까지 업로드 가능합니다</p>
+            </div>
           </div>
         )}
 
@@ -182,8 +182,8 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
         {uploadState === 'uploading' && (
           <div className="bg-white border border-[#E2E8F0] rounded-2xl p-6 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="w-10 h-10 bg-[#EFF6FF] rounded-xl flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5 text-[#2563EB]" />
+              <div className="w-10 h-10 bg-[#EEF2FF] rounded-xl flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5 text-[#6366F1]" />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">
@@ -193,7 +193,7 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
                 <div className="flex items-center gap-3 mb-1.5">
                   <div className="flex-1 h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#2563EB] rounded-full transition-all duration-300"
+                      className="h-full bg-[#6366F1] rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(progress, 100)}%` }}
                     />
                   </div>
@@ -228,7 +228,7 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
       {/* ── 2. Contract Type Section ── */}
       <section className="space-y-6">
         <div>
-          <p className="text-xs font-semibold tracking-[.14em] text-[#2563EB] mb-3">2단계 · 비교 기준</p>
+          <p className="text-xs font-semibold tracking-[.14em] text-[#6366F1] mb-3">2단계 · 비교 기준</p>
           <h2 className="text-[22px] font-semibold text-[#1E293B] tracking-tight mb-2">계약 유형 선택</h2>
           <p className="text-sm text-[#475569] leading-relaxed mb-1">
             실제 계약 관계에 가장 가까운 유형을 선택해 주세요.
@@ -248,14 +248,14 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
                 aria-pressed={active}
                 className={`relative min-h-[80px] py-3 px-2 rounded-xl border-2 transition-all flex flex-col items-center justify-center text-center ${
                   active 
-                    ? 'border-[#2563EB] bg-[#EFF6FF]/40 shadow-sm' 
+                    ? 'border-[#6366F1] bg-[#EEF2FF]/40 shadow-sm' 
                     : 'border-[#E2E8F0] bg-white hover:border-[#93C5FD] hover:bg-slate-50'
                 }`}
               >
                 <div className="flex items-center justify-center gap-1.5 w-full">
-                  <h3 className={`text-[14px] font-semibold ${active ? 'text-[#2563EB]' : 'text-[#1E293B]'}`}>{type.name}</h3>
+                  <h3 className={`text-[14px] font-semibold ${active ? 'text-[#6366F1]' : 'text-[#1E293B]'}`}>{type.name}</h3>
                   {active && (
-                    <CheckCircle2 className="w-4 h-4 text-[#2563EB]" />
+                    <CheckCircle2 className="w-4 h-4 text-[#6366F1]" />
                   )}
                 </div>
                 <p className="text-[11px] text-[#64748B] mt-1 leading-relaxed break-keep">{type.sub}</p>
@@ -268,7 +268,7 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
           <p className="text-xs text-[#475569] leading-relaxed flex-1">
             해당하는 계약 유형이 없다면, 제공 범위를 먼저 확인해 주세요.
           </p>
-          <button onClick={onOutOfScope} className="text-sm font-semibold text-[#2563EB] hover:text-[#1D4ED8]">
+          <button onClick={onOutOfScope} className="text-sm font-semibold text-[#6366F1] hover:text-[#4F46E5]">
             제공 범위 확인
           </button>
         </div>
@@ -287,7 +287,7 @@ export default function UploadAndTypeScreen({ sessionId, setSessionId, setReview
           disabled={uploadState !== 'success'}
           className={`inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-semibold transition-all ${
             uploadState === 'success'
-              ? 'bg-[#2563EB] text-white hover:bg-[#1D4ED8] shadow-md shadow-blue-500/20'
+              ? 'bg-[#6366F1] text-white hover:bg-[#4F46E5] shadow-md shadow-blue-500/20'
               : 'bg-[#E2E8F0] text-[#94A3B8] cursor-not-allowed'
           }`}
         >

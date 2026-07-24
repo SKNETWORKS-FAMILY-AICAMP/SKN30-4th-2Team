@@ -33,11 +33,13 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
   const [clauses, setClauses] = useState<ClauseResult[]>([])
 
   useEffect(() => {
-    if (!reviewId) return
     let isSubscribed = true
     setIsLoading(true)
 
-    mockApi.getResults(reviewId).then(res => {
+    // Fallback ID for demo nav when no actual review process was run
+    const activeReviewId = reviewId || 'rev_mock_456'
+
+    mockApi.getResults(activeReviewId).then(res => {
       if (!isSubscribed) return
       setResultsData(res.data)
       
@@ -82,7 +84,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 space-y-4">
-        <Loader2 className="w-8 h-8 text-[#2563EB] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#6366F1] animate-spin" />
         <p className="text-sm font-medium text-[#475569]">결과를 불러오는 중입니다...</p>
       </div>
     )
@@ -115,7 +117,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
         </div>
         <button
           onClick={onChatbot}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] rounded-xl text-sm font-medium hover:bg-[#DBEAFE] transition-colors shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#EEF2FF] text-[#6366F1] border border-[#C7D2FE] rounded-xl text-sm font-medium hover:bg-[#E0E7FF] transition-colors shrink-0"
         >
           <MessageSquare className="w-4 h-4" />
           결과 기반 질의응답
@@ -137,7 +139,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
             key={s.status}
             onClick={() => setFilterStatus(s.status)}
             className={`text-left p-4 rounded-xl border transition-all hover:shadow-sm ${s.bg} ${s.border} ${
-              filterStatus === s.status ? 'ring-2 ring-[#2563EB]/40' : ''
+              filterStatus === s.status ? 'ring-2 ring-[#6366F1]/40' : ''
             }`}
           >
             <p className={`text-3xl font-bold tracking-tight mb-1 ${s.num}`}>{s.count}</p>
@@ -154,7 +156,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
             onClick={() => setActiveTab(id)}
             className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
               activeTab === id
-                ? 'border-[#2563EB] text-[#1E293B]'
+                ? 'border-[#6366F1] text-[#1E293B]'
                 : 'border-transparent text-[#475569] hover:text-[#1E293B]'
             }`}
           >
@@ -175,7 +177,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
                 placeholder="조항명, 키워드로 검색"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-sm text-[#1E293B] placeholder:text-[#64748B] focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                className="w-full pl-9 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg text-sm text-[#1E293B] placeholder:text-[#64748B] focus:outline-none focus:border-[#6366F1] focus:ring-1 focus:ring-[#6366F1]"
               />
             </div>
             {/* Filters row */}
@@ -188,7 +190,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
                     onClick={() => setFilterStatus(s.id as BadgeStatus | 'all')}
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
                       filterStatus === s.id
-                        ? 'bg-[#2563EB] text-white'
+                        ? 'bg-[#6366F1] text-white'
                         : 'bg-[#F8FAFC] border border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]'
                     }`}
                   >
@@ -200,7 +202,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
               <select
                 value={filterCategory}
                 onChange={e => setFilterCategory(e.target.value)}
-                className="text-xs border border-[#E2E8F0] rounded-lg px-2.5 py-1.5 bg-[#F8FAFC] text-[#475569] focus:outline-none focus:border-[#2563EB]"
+                className="text-xs border border-[#E2E8F0] rounded-lg px-2.5 py-1.5 bg-[#F8FAFC] text-[#475569] focus:outline-none focus:border-[#6366F1]"
               >
                 {CATEGORIES.map(c => <option key={c}>{c}</option>)}
               </select>
@@ -217,7 +219,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
           {filtered.length > 0 ? (
             <div className="space-y-3">
               {filtered.map(c => (
-                <div key={c.id} className="bg-white border border-[#E2E8F0] rounded-xl p-5 hover:border-[#BFDBFE] hover:shadow-sm transition-all">
+                <div key={c.id} className="bg-white border border-[#E2E8F0] rounded-xl p-5 hover:border-[#C7D2FE] hover:shadow-sm transition-all">
                   <div className="flex items-start gap-3 justify-between flex-wrap">
                     <div className="flex items-center gap-2 flex-wrap">
                       <Badge status={c.status} />
@@ -225,7 +227,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
                     </div>
                     <button
                       onClick={onClauseClick}
-                      className="flex items-center gap-1 text-xs font-medium text-[#2563EB] hover:text-[#1E293B] transition-colors shrink-0"
+                      className="flex items-center gap-1 text-xs font-medium text-[#6366F1] hover:text-[#1E293B] transition-colors shrink-0"
                     >
                       상세 보기 <ChevronRight className="w-3.5 h-3.5" />
                     </button>
@@ -242,7 +244,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
             <div className="bg-white border border-[#E2E8F0] rounded-xl p-12 text-center">
               <p className="text-sm font-medium text-[#475569] mb-1">현재 비교 결과가 생성되지 않았습니다</p>
               <p className="text-xs text-[#64748B]">필터를 변경하거나 초기화해 보세요</p>
-              <button onClick={resetFilters} className="mt-4 text-xs font-medium text-[#2563EB] hover:underline">
+              <button onClick={resetFilters} className="mt-4 text-xs font-medium text-[#6366F1] hover:underline">
                 필터 초기화
               </button>
             </div>
@@ -257,7 +259,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
             <div className="flex items-center gap-2 mb-4">
               <CheckSquare className="w-4 h-4 text-[#64748B]" aria-hidden="true" />
               <h2 className="text-sm font-semibold text-[#1E293B]">포함 여부 체크리스트</h2>
-              <span className="text-xs text-[#475569] bg-[#EFF6FF] border border-[#CBD5E1] text-[#475569] px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs text-[#475569] bg-[#EEF2FF] border border-[#CBD5E1] text-[#475569] px-2 py-0.5 rounded-full font-medium">
                 {resultsData.missing_standard_clauses.length}건
               </span>
             </div>
@@ -271,7 +273,7 @@ export default function ResultsScreen({ reviewId, onClauseClick, onChatbot }: Pr
                   <div key={item.standard.clause_id} className="bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl overflow-hidden">
                     <button
                       onClick={() => setExpandedMissing(open ? null : item.standard.clause_id)}
-                      className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[#EFF6FF] transition-colors"
+                      className="w-full flex items-center gap-3 px-5 py-4 text-left hover:bg-[#EEF2FF] transition-colors"
                       aria-expanded={open}
                     >
                       <div className="w-4 h-4 rounded border-2 border-[#94A3B8] shrink-0 flex items-center justify-center" aria-hidden="true" />

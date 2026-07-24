@@ -1,4 +1,4 @@
-import { Check } from 'lucide-react'
+﻿import { Check } from 'lucide-react'
 import type { Screen } from '../types'
 
 const STEPS = [
@@ -47,7 +47,7 @@ export default function Sidebar({ currentScreen, onNavigate }: Props) {
               disabled={!clickable}
               className={`relative flex items-start gap-3 px-3 py-3 rounded-xl text-left transition-colors mb-1 ${
                 current
-                  ? 'bg-[#EFF6FF]'
+                  ? 'bg-[#EEF2FF]'
                   : clickable
                   ? 'hover:bg-[#F8FAFC]'
                   : 'opacity-40 cursor-not-allowed'
@@ -57,9 +57,9 @@ export default function Sidebar({ currentScreen, onNavigate }: Props) {
               <div
                 className={`relative z-10 mt-0.5 w-[30px] h-[30px] rounded-full flex items-center justify-center shrink-0 text-xs font-semibold transition-colors ${
                   done
-                    ? 'bg-[#2563EB] text-white'
+                    ? 'bg-[#6366F1] text-white'
                     : current
-                    ? 'bg-[#1E293B] text-white ring-4 ring-[#EFF6FF]'
+                    ? 'bg-[#1E293B] text-white ring-4 ring-[#EEF2FF]'
                     : 'bg-white border-2 border-[#E2E8F0] text-[#64748B]'
                 }`}
               >
@@ -72,8 +72,8 @@ export default function Sidebar({ currentScreen, onNavigate }: Props) {
                 </p>
                 <p className="text-[11px] text-[#64748B] mt-0.5 leading-tight">{step.sub}</p>
                 {current && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#2563EB] bg-[#BFDBFE]/40 px-1.5 py-0.5 rounded-full mt-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#2563EB] animate-pulse-dot" />
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-[#6366F1] bg-[#C7D2FE]/40 px-1.5 py-0.5 rounded-full mt-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#6366F1] animate-pulse-dot" />
                     진행 중
                   </span>
                 )}
@@ -90,7 +90,7 @@ export default function Sidebar({ currentScreen, onNavigate }: Props) {
           <p className="text-[11px] text-[#475569] leading-relaxed">
             사용 방법이나 서비스 관련 문의는 고객 지원 페이지를 이용해 주세요.
           </p>
-          <a href="#" className="text-[11px] font-semibold text-[#2563EB] mt-2 inline-block hover:underline">
+          <a href="#" className="text-[11px] font-semibold text-[#6366F1] mt-2 inline-block hover:underline">
             고객 지원 바로가기 →
           </a>
         </div>

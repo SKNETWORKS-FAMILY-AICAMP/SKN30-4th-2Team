@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { ArrowLeft, Scale, Copy, ChevronRight, MessageSquare, Check, BookOpen } from 'lucide-react'
 import Badge from '../components/Badge'
 
@@ -105,12 +105,12 @@ export default function ClauseDetailScreen({ onBack, onChatbot }: Props) {
         </div>
 
         {/* Standard clause */}
-        <div className="bg-[#EFF6FF]/40 border border-[#BFDBFE] rounded-2xl overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#BFDBFE] bg-[#EFF6FF]/60">
-            <p className="text-xs font-semibold text-[#2563EB]">대응 표준조항</p>
+        <div className="bg-[#EEF2FF]/40 border border-[#C7D2FE] rounded-2xl overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3.5 border-b border-[#C7D2FE] bg-[#EEF2FF]/60">
+            <p className="text-xs font-semibold text-[#6366F1]">대응 표준조항</p>
             <button
               onClick={() => copy('standard', CLAUSE_DATA.standardText)}
-              className="flex items-center gap-1 text-[11px] text-[#2563EB] hover:text-[#1E293B] transition-colors"
+              className="flex items-center gap-1 text-[11px] text-[#6366F1] hover:text-[#1E293B] transition-colors"
               aria-label="표준조항 복사"
             >
               {copied === 'standard' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
@@ -133,12 +133,12 @@ export default function ClauseDetailScreen({ onBack, onChatbot }: Props) {
           {CLAUSE_DATA.legalBasis.map((basis, i) => (
             <div key={i} className="bg-white border border-[#E2E8F0] rounded-xl p-5">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-[#EFF6FF] rounded-lg flex items-center justify-center shrink-0 mt-0.5">
-                  <BookOpen className="w-4 h-4 text-[#2563EB]" />
+                <div className="w-8 h-8 bg-[#EEF2FF] rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+                  <BookOpen className="w-4 h-4 text-[#6366F1]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <span className="text-xs font-semibold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded">{basis.law}</span>
+                    <span className="text-xs font-semibold text-[#6366F1] bg-[#EEF2FF] border border-[#C7D2FE] px-2 py-0.5 rounded">{basis.law}</span>
                     <span className="text-xs font-medium text-[#1E293B]">{basis.title}</span>
                   </div>
                   <p className="text-xs text-[#475569] leading-relaxed mb-2">{basis.text}</p>
@@ -154,7 +154,7 @@ export default function ClauseDetailScreen({ onBack, onChatbot }: Props) {
       <div className="flex items-center gap-3 flex-wrap pt-2">
         <button
           onClick={onChatbot}
-          className="flex items-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
+          className="flex items-center gap-2 px-5 py-3 bg-[#6366F1] text-white rounded-xl text-sm font-medium hover:bg-[#4F46E5] transition-colors"
         >
           협의 문구 제안 보기
           <ChevronRight className="w-4 h-4" />
