@@ -1,5 +1,6 @@
 """환경별 설정과 FastAPI 의존성 provider를 정의한다."""
 
+import json
 import os
 from enum import StrEnum
 from functools import lru_cache
@@ -59,6 +60,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=_environment_files(),
         env_file_encoding="utf-8",
+        enable_decoding=False,
         extra="ignore",
     )
 
@@ -86,7 +88,21 @@ class Settings(BaseSettings):
         DEFAULT_SUPPORTED_FILE_EXTENSIONS
     )
     temp_upload_dir: Path = Path("data/99_uploads")
-    session_ttl_seconds: int = Field(default=60 * 60, gt=0)
+    session_ttl_seconds: int = Field(default=30 * 60, gt=0)
+    storage_cleanup_interval_seconds: int = Field(default=60, gt=0)
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
+        """JSON 배열 환경변수를 CORS origin 목록으로 변환한다."""
+        if not isinstance(value, str):
+            return value
+        parsed = json.loads(value)
+        if not isinstance(parsed, list) or not all(
+            isinstance(origin, str) for origin in parsed
+        ):
+            raise ValueError("CORS_ORIGINS는 문자열 JSON 배열이어야 합니다.")
+        return parsed
 
     @field_validator("supported_file_extensions", mode="before")
     @classmethod

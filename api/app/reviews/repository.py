@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models import ReviewRow
+from app.db.models import ReviewSessionRow
 from app.reviews.domain import Review
 from app.reviews.mapper import review_from_row, review_to_row, update_review_row
 
@@ -17,6 +18,12 @@ class ReviewRepository(Protocol):
 
     def get(self, review_id: str) -> Review | None: ...
 
+    def get_owned(
+        self,
+        review_id: str,
+        access_token_hash: str,
+    ) -> Review | None: ...
+
     def save(self, entity: Review) -> None: ...
 
     def find_by_idempotency_key(
@@ -26,6 +33,8 @@ class ReviewRepository(Protocol):
     ) -> Review | None: ...
 
     def list_by_session(self, session_id: str) -> list[Review]: ...
+
+    def has_active_for_session(self, session_id: str) -> bool: ...
 
     def delete(self, review_id: str) -> bool: ...
 
@@ -41,6 +50,22 @@ class SqlAlchemyReviewRepository:
 
     def get(self, review_id: str) -> Review | None:
         row = self._session.get(ReviewRow, review_id)
+        return review_from_row(row) if row is not None else None
+
+    def get_owned(
+        self,
+        review_id: str,
+        access_token_hash: str,
+    ) -> Review | None:
+        statement = (
+            select(ReviewRow)
+            .join(ReviewSessionRow, ReviewSessionRow.id == ReviewRow.session_id)
+            .where(
+                ReviewRow.id == review_id,
+                ReviewSessionRow.access_token_hash == access_token_hash,
+            )
+        )
+        row = self._session.scalar(statement)
         return review_from_row(row) if row is not None else None
 
     def save(self, entity: Review) -> None:
@@ -71,6 +96,13 @@ class SqlAlchemyReviewRepository:
             review_from_row(row)
             for row in self._session.scalars(statement).all()
         ]
+
+    def has_active_for_session(self, session_id: str) -> bool:
+        statement = select(ReviewRow.id).where(
+            ReviewRow.session_id == session_id,
+            ReviewRow.state.in_(("QUEUED", "REVIEWING")),
+        )
+        return self._session.scalar(statement) is not None
 
     def delete(self, review_id: str) -> bool:
         row = self._session.get(ReviewRow, review_id)

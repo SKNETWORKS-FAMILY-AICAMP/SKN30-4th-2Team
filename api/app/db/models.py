@@ -42,7 +42,7 @@ class ReviewSessionRow(Base):
     )
     original_file_name: Mapped[str] = mapped_column(String(255))
     file_size_bytes: Mapped[int] = mapped_column(BigInteger)
-    storage_path: Mapped[str] = mapped_column(Text)
+    storage_key: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     expires_at: Mapped[datetime] = mapped_column(

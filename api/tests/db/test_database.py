@@ -20,7 +20,7 @@ def session_row(session_id: str = "ses_database") -> ReviewSessionRow:
         state="ANALYZING_CONTRACT_TYPE",
         original_file_name="contract.pdf",
         file_size_bytes=1024,
-        storage_path=f"/tmp/{session_id}.pdf",
+        storage_key=f"{'a' * 43}.pdf",
         created_at=now,
         updated_at=now,
         expires_at=now + timedelta(hours=1),

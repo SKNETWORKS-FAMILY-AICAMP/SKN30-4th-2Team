@@ -44,7 +44,7 @@ class ReviewSession:
     state: ReviewSessionState
     original_file_name: str
     file_size_bytes: int
-    storage_path: str
+    storage_key: str | None
     created_at: datetime
     updated_at: datetime
     expires_at: datetime
