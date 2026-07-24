@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Screen } from './types'
+import { TEMP_SESSION_TOKEN_KEY } from './config'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import UploadAndTypeScreen from './screens/UploadAndTypeScreen'
@@ -20,6 +21,18 @@ const DEMO_NAV: { id: Screen; label: string; step: string }[] = [
 
 export default function App() {
   const [screen, setScreen] = useState<Screen>('upload-and-type')
+  const [sessionId, setSessionId] = useState<string | null>(null)
+  const [reviewId, setReviewId] = useState<string | null>(null)
+
+  // Recovery logic for session token
+  useEffect(() => {
+    const savedSession = localStorage.getItem(TEMP_SESSION_TOKEN_KEY)
+    if (savedSession) {
+      setSessionId(savedSession)
+      // Additional recovery logic (fetching reviewId) can be added here
+    }
+  }, [])
+
   const nav = (s: Screen) => setScreen(s)
 
   return (
@@ -56,6 +69,9 @@ export default function App() {
           <div key={screen} className="max-w-[900px] mx-auto animate-fade-up">
             {screen === 'upload-and-type' && (
               <UploadAndTypeScreen
+                sessionId={sessionId}
+                setSessionId={setSessionId}
+                setReviewId={setReviewId}
                 onNext={() => nav('processing')}
                 onOutOfScope={() => nav('out-of-scope')}
               />
@@ -67,10 +83,14 @@ export default function App() {
               />
             )}
             {screen === 'processing' && (
-              <ProcessingScreen onDone={() => nav('results')} />
+              <ProcessingScreen
+                reviewId={reviewId}
+                onDone={() => nav('results')} 
+              />
             )}
             {screen === 'results' && (
               <ResultsScreen
+                reviewId={reviewId}
                 onClauseClick={() => nav('clause-detail')}
                 onChatbot={() => nav('chatbot')}
               />

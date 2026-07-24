@@ -2,8 +2,13 @@ import { useState, useRef } from 'react'
 import {
   UploadCloud, FileText, CheckCircle2, X, ChevronRight, BriefcaseBusiness, Handshake
 } from 'lucide-react'
+import { mockApi } from '../api/mockApi'
+import { TEMP_FILE_MAX_SIZE, TEMP_SESSION_TOKEN_KEY } from '../config'
 
 interface Props { 
+  sessionId: string | null;
+  setSessionId: (id: string | null) => void;
+  setReviewId: (id: string | null) => void;
   onNext: () => void;
   onOutOfScope: () => void;
 }
@@ -18,28 +23,91 @@ const CONTRACT_TYPES = [
   { id: 'SM_SUBCONTRACT', name: 'SM 하도급', sub: 'SM 운영·유지보수 하도급 계약 비교 기준입니다.' },
 ]
 
-export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
+export default function UploadAndTypeScreen({ sessionId, setSessionId, setReviewId, onNext, onOutOfScope }: Props) {
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [isDragging, setIsDragging]   = useState(false)
   const [progress, setProgress]        = useState(0)
   const [fileName, setFileName]        = useState('')
-  const [fileSize, setFileSize]        = useState('')
+  const [fileSizeStr, setFileSizeStr]  = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
   
   const [selectedType, setSelectedType] = useState('SI_SUBCONTRACT')
+  const [errorMsg, setErrorMsg] = useState('')
 
-  const startUpload = (name: string, size: string) => {
-    setFileName(name); setFileSize(size)
-    setUploadState('uploading'); setProgress(0)
-    const id = setInterval(() => {
-      setProgress(p => {
-        if (p >= 100) { clearInterval(id); setUploadState('success'); return 100 }
-        return Math.min(p + Math.random() * 18, 100)
-      })
-    }, 180)
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    processFile(file)
   }
 
-  const reset = () => { setUploadState('idle'); setProgress(0) }
+  const processFile = async (file: File) => {
+    setErrorMsg('')
+    if (file.size > TEMP_FILE_MAX_SIZE) {
+      setErrorMsg(`파일 크기가 10MB를 초과합니다. (현재: ${(file.size / 1024 / 1024).toFixed(1)}MB)`)
+      return
+    }
+
+    const extension = file.name.split('.').pop()?.toUpperCase() || ''
+    if (!FORMATS.includes(extension)) {
+      setErrorMsg(`지원하지 않는 파일 형식입니다. (.${extension.toLowerCase()})`)
+      return
+    }
+
+    setFileName(file.name)
+    setFileSizeStr((file.size / 1024).toFixed(1) + ' KB')
+    setUploadState('uploading')
+    setProgress(0)
+
+    // Simulate progress while API is called
+    const id = setInterval(() => {
+      setProgress(p => Math.min(p + Math.random() * 20, 90))
+    }, 200)
+
+    try {
+      const response = await mockApi.uploadContract(file)
+      clearInterval(id)
+      setProgress(100)
+      setUploadState('success')
+      
+      const newSessionId = response.data.session_id
+      setSessionId(newSessionId)
+      localStorage.setItem(TEMP_SESSION_TOKEN_KEY, newSessionId)
+
+      if (response.data.suggested_contract_type) {
+        setSelectedType(response.data.suggested_contract_type)
+      }
+    } catch (err) {
+      clearInterval(id)
+      setUploadState('idle')
+      setErrorMsg('업로드에 실패했습니다. 다시 시도해주세요.')
+    }
+  }
+
+  const handleNext = async () => {
+    if (!sessionId) return
+    try {
+      // 1. Confirm contract type
+      await mockApi.selectContractType(sessionId, selectedType)
+      
+      // 2. Start review
+      const reviewRes = await mockApi.startReview(sessionId)
+      setReviewId(reviewRes.data.review_id)
+      
+      // 3. Move to processing screen
+      onNext()
+    } catch (err) {
+      setErrorMsg('검토 시작 중 오류가 발생했습니다.')
+    }
+  }
+
+  const reset = () => { 
+    setUploadState('idle')
+    setProgress(0)
+    setErrorMsg('')
+    setSessionId(null)
+    setReviewId(null)
+    localStorage.removeItem(TEMP_SESSION_TOKEN_KEY)
+  }
 
   return (
     <div className="space-y-10 animate-fade-up">
@@ -55,13 +123,24 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
           </p>
         </div>
 
+        {errorMsg && (
+          <div className="bg-red-50 border border-red-200 text-red-600 text-sm px-4 py-3 rounded-lg">
+            {errorMsg}
+          </div>
+        )}
+
         {uploadState === 'idle' && (
           <div
             role="button"
             tabIndex={0}
             onDragOver={e => { e.preventDefault(); setIsDragging(true) }}
             onDragLeave={() => setIsDragging(false)}
-            onDrop={e => { e.preventDefault(); setIsDragging(false); startUpload('계약서_초안.docx', '284 KB') }}
+            onDrop={e => { 
+              e.preventDefault(); 
+              setIsDragging(false); 
+              const file = e.dataTransfer.files?.[0]
+              if (file) processFile(file)
+            }}
             onClick={() => fileRef.current?.click()}
             className={`border-2 border-dashed rounded-2xl p-10 sm:p-14 flex flex-col items-center text-center cursor-pointer transition-all duration-200 ${
               isDragging
@@ -69,7 +148,7 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
                 : 'border-[#CBD5E1] bg-white hover:border-[#2563EB] hover:bg-[#EFF6FF]/40'
             }`}
           >
-            <input ref={fileRef} type="file" className="hidden" onChange={() => startUpload('계약서_초안.docx', '1.2 MB')} />
+            <input ref={fileRef} type="file" className="hidden" accept=".hwp,.hwpx,.hwpml,.pdf,.xls,.xlsx,.docx" onChange={handleFileChange} />
             <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 transition-colors ${
               isDragging ? 'bg-[#2563EB]' : 'bg-[#EFF6FF]'
             }`}>
@@ -109,7 +188,7 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-sm font-medium text-[#1E293B] truncate pr-4">{fileName}</p>
-                  <span className="text-xs text-[#475569] shrink-0">{fileSize}</span>
+                  <span className="text-xs text-[#475569] shrink-0">{fileSizeStr}</span>
                 </div>
                 <div className="flex items-center gap-3 mb-1.5">
                   <div className="flex-1 h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden">
@@ -121,9 +200,6 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
                   <span className="text-xs font-medium text-[#475569] shrink-0">전송 중</span>
                 </div>
               </div>
-              <button onClick={reset} aria-label="업로드 취소" className="text-[#64748B] hover:text-[#475569] transition-colors mt-0.5">
-                <X className="w-4 h-4" />
-              </button>
             </div>
           </div>
         )}
@@ -137,7 +213,7 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-[#1E293B] truncate">{fileName}</p>
-                <p className="text-xs text-[#475569] mt-0.5">{fileSize} · 업로드 완료</p>
+                <p className="text-xs text-[#475569] mt-0.5">{fileSizeStr} · 업로드 완료</p>
               </div>
               <button onClick={reset} aria-label="파일 제거" className="text-[#64748B] hover:text-[#475569] transition-colors">
                 <X className="w-4 h-4" />
@@ -200,7 +276,6 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
 
       {/* ── 3. Bottom Controls & Help ── */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between pt-4 gap-6">
-        {/* Placeholder for "도움이 필요하신가요?" */}
         <div className="bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 border-dashed">
           <p className="text-xs font-medium text-slate-500">
             [도움이 필요하신가요?] 임시 영역 (팀 논의 후 삭제 또는 유지)
@@ -208,7 +283,7 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
         </div>
 
         <button
-          onClick={onNext}
+          onClick={handleNext}
           disabled={uploadState !== 'success'}
           className={`inline-flex items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-semibold transition-all ${
             uploadState === 'success'
@@ -222,3 +297,4 @@ export default function UploadAndTypeScreen({ onNext, onOutOfScope }: Props) {
     </div>
   )
 }
+

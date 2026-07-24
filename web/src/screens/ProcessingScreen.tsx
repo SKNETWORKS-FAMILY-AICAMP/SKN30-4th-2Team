@@ -1,51 +1,75 @@
 import { useState, useEffect } from 'react'
 import { Check, AlertCircle, RefreshCw, ChevronRight } from 'lucide-react'
+import { mockApi } from '../api/mockApi'
+import { ReviewProgress } from '../types'
 
-interface Props { onDone: () => void }
+interface Props {
+  reviewId: string | null;
+  onDone: () => void
+}
 
 const STEPS = [
-  { id: 0, label: '검토 준비 중',          detail: '파일 파싱 및 텍스트 추출 완료' },
-  { id: 1, label: '관련 표준조항 탐색 중', detail: '근로기준법 관련 표준조항 12개 확인 중' },
-  { id: 2, label: '비교 조항 선별 중',     detail: '비교 대상 조항을 정리하고 있습니다' },
-  { id: 3, label: '계약 조항 비교 중',     detail: '제7조 (임금) 비교 분석 중' },
-  { id: 4, label: '확인할 표준조항 정리 중', detail: '최종 검토 결과 구성 중' },
-]
-
-const CURRENT_EXAMPLES = [
-  '제1조 (근로계약 기간)',
-  '제3조 (근무 장소 및 업무 내용)',
-  '제5조 (근로시간 및 휴게)',
-  '제7조 (임금 및 지급 방법)',
-  '제9조 (연차 유급휴가)',
+  { id: 0, label: '검토 준비 중', stage: 'PREPARE' },
+  { id: 1, label: '조항 탐색 및 분류', stage: 'BATCH_SEARCH' },
+  { id: 2, label: '검토 진행 중', stage: 'CLAUSE_REVIEW' },
+  { id: 3, label: '누락 조항 검출', stage: 'MISSING_DETECTION' },
+  { id: 4, label: '결과 정리 중', stage: 'RESULT_ASSEMBLY' },
 ]
 
 type Mode = 'running' | 'error' | 'done'
 
-export default function ProcessingScreen({ onDone }: Props) {
-  const [activeStep, setActiveStep]     = useState(0)
-  const [currentClause, setCurrentClause] = useState(0)
-  const [progress, setProgress]         = useState(0)
-  const [mode, setMode]                 = useState<Mode>('running')
+export default function ProcessingScreen({ reviewId, onDone }: Props) {
+  const [activeStep, setActiveStep] = useState(0)
+  const [progress, setProgress] = useState<ReviewProgress | null>(null)
+  const [mode, setMode] = useState<Mode>('running')
+  const [errorMsg, setErrorMsg] = useState('')
 
   useEffect(() => {
-    if (mode !== 'running') return
-    const id = setInterval(() => {
-      setActiveStep(s => {
-        if (s >= STEPS.length - 1) {
-          clearInterval(id)
-          setMode('done')
-          setProgress(100)
-          return s
-        }
-        setProgress(((s + 1) / STEPS.length) * 100)
-        setCurrentClause(c => (c + 1) % CURRENT_EXAMPLES.length)
-        return s + 1
-      })
-    }, 1400)
-    return () => clearInterval(id)
-  }, [mode])
+    if (mode !== 'running' || !reviewId) return
 
-  const triggerError = () => setMode('error')
+    let isSubscribed = true
+    let currentPercent = progress?.percent || 0
+
+    const poll = async () => {
+      try {
+        const res = await mockApi.pollReviewStatus(reviewId, currentPercent)
+        if (!isSubscribed) return
+
+        const { review_state, progress: newProgress } = res.data
+        setProgress(newProgress)
+        currentPercent = newProgress.percent
+
+        // Update active step based on stage
+        const stepIndex = STEPS.findIndex(s => s.stage === newProgress.stage)
+        if (stepIndex !== -1) setActiveStep(stepIndex)
+
+        if (review_state === 'COMPLETED') {
+          setActiveStep(STEPS.length - 1)
+          setMode('done')
+        } else if (review_state === 'FAILED') {
+          setMode('error')
+          setErrorMsg('서버에서 검토 중 오류가 발생했습니다.')
+        } else {
+          // Continue polling
+          setTimeout(poll, 1500)
+        }
+      } catch (err) {
+        if (!isSubscribed) return
+        setMode('error')
+        setErrorMsg('통신 중 오류가 발생했습니다.')
+      }
+    }
+
+    // Start initial polling
+    poll()
+
+    return () => { isSubscribed = false }
+  }, [mode, reviewId])
+
+  const triggerError = () => {
+    setMode('error')
+    setErrorMsg('오류 상태 미리보기용 테스트 오류입니다.')
+  }
 
   return (
     <div className="space-y-8 animate-fade-up max-w-2xl">
@@ -66,18 +90,20 @@ export default function ProcessingScreen({ onDone }: Props) {
         <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-[#1E293B]">검토 진행 상태</p>
-            <p className="text-xs font-medium text-[#2563EB]">처리 중</p>
+            <p className="text-xs font-medium text-[#2563EB]">
+              {mode === 'done' ? '완료됨' : '처리 중'}
+            </p>
           </div>
           <div className="h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
             <div
               className="h-full bg-[#2563EB] rounded-full transition-all duration-700"
-              style={{ width: `${progress}%` }}
+              style={{ width: `${progress?.percent || 0}%` }}
             />
           </div>
-          {mode === 'running' && (
+          {mode === 'running' && progress && (
             <p className="text-xs text-[#475569] mt-3">
               현재 처리 중:{' '}
-              <span className="font-medium text-[#1E293B]">{CURRENT_EXAMPLES[currentClause]}</span>
+              <span className="font-medium text-[#1E293B]">{progress.message}</span>
             </p>
           )}
         </div>
@@ -86,10 +112,10 @@ export default function ProcessingScreen({ onDone }: Props) {
       {/* Step list */}
       <div className="bg-white border border-[#E2E8F0] rounded-xl divide-y divide-[#F1F5F9]">
         {STEPS.map((step, i) => {
-          const done    = i < activeStep || mode === 'done'
+          const done = i < activeStep || mode === 'done'
           const current = i === activeStep && mode === 'running'
-          const error   = mode === 'error' && i === activeStep
-          const ahead   = i > activeStep && mode !== 'done'
+          const error = mode === 'error' && i === activeStep
+          const ahead = i > activeStep && mode !== 'done'
 
           return (
             <div key={step.id} className={`flex items-center gap-4 px-5 py-4 ${current ? 'bg-[#EFF6FF]/40' : ''}`}>
@@ -114,14 +140,10 @@ export default function ProcessingScreen({ onDone }: Props) {
               </div>
 
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-medium ${
-                  done ? 'text-[#1E293B]' : current ? 'text-[#1E293B]' : error ? 'text-rose-600' : 'text-[#64748B]'
-                }`}>
+                <p className={`text-sm font-medium ${done ? 'text-[#1E293B]' : current ? 'text-[#1E293B]' : error ? 'text-rose-600' : 'text-[#64748B]'
+                  }`}>
                   {step.label}
                 </p>
-                {(done || current) && !error && (
-                  <p className="text-xs text-[#475569] mt-0.5">{step.detail}</p>
-                )}
                 {error && (
                   <p className="text-xs text-rose-500 mt-0.5">조항 비교 중 서버 응답을 받지 못했습니다</p>
                 )}
@@ -144,10 +166,9 @@ export default function ProcessingScreen({ onDone }: Props) {
           <div className="flex items-start gap-3">
             <AlertCircle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-rose-700 mb-1">비교 조항 선별 중 오류 발생</p>
+              <p className="text-sm font-semibold text-rose-700 mb-1">진행 중 오류 발생</p>
               <p className="text-xs text-rose-600 leading-relaxed">
-                표준조항 데이터베이스와의 연결이 일시적으로 중단되었습니다. 잠시 후 다시 시도하거나,
-                문제가 지속되면 고객 지원에 문의해 주세요.
+                {errorMsg}
               </p>
             </div>
           </div>
@@ -158,7 +179,7 @@ export default function ProcessingScreen({ onDone }: Props) {
       <div className="flex items-center gap-3 pt-2">
         {mode === 'error' && (
           <button
-            onClick={() => { setActiveStep(0); setProgress(0); setMode('running') }}
+            onClick={() => { setActiveStep(0); setProgress(null); setMode('running') }}
             className="flex items-center gap-2 px-5 py-3 bg-[#2563EB] text-white rounded-xl text-sm font-medium hover:bg-[#1D4ED8] transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
