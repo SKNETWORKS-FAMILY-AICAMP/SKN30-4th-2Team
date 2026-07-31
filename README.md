@@ -4,6 +4,34 @@ WorkShield는 IT·SW 분야(SW 프리랜서, SI·SM 하도급) 계약서를 표�
 
 ---
 
+## 팀원
+
+<table>
+  <tr align="center">
+    <td><img src="./assets/1_1.png" width="60"></td>
+    <td><img src="./assets/1_2.png" width="60"></td>
+    <td><img src="./assets/1_3.png" width="60"></td>
+    <td><img src="./assets/1_4.png" width="60"></td>
+    <td><img src="./assets/1_5.jpg" width="60"></td>
+  </tr>
+  <tr align="center">
+    <td><b>박세빈</b></td>
+    <td><b>홍철민</b></td>
+    <td><b>김효선</b></td>
+    <td><b>장규원</b></td>
+    <td><b>박지유</b></td>
+  </tr>
+  <tr align="center" valign="top">
+    <td>데이터 임베딩,<br>주의 문구 패턴 수집·정의</td>
+    <td>시스템 설계·<br>MCP 구현</td>
+    <td>품질 평가·<br>테스트 계획</td>
+    <td>데이터 전처리·<br>조항 카테고리 라벨링</td>
+    <td>검색 파이프라인 구현</td>
+  </tr>
+</table>
+
+---
+
 ## 프로젝트 구조
 
 ```text
